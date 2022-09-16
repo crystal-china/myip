@@ -1,18 +1,11 @@
 # myip
 
-TODO: Write a description here
+返回本机的公网 IP 以及访问外网的 IP.
 
-## Installation
-
-TODO: Write installation instructions here
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Development
-
-TODO: Write development instructions here
+ ╰─ $ bin/myip 
+当前 IP：123.123.123.123  来自于：中国 北京 联通
+外网: 1.2.3.4
+翻墙: 4.5.6.7
 
 ## Contributing
 
