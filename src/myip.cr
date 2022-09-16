@@ -1,4 +1,5 @@
 require "crystagiri"
+require "./myip/*"
 
 begin
   doc = Crystagiri::HTML.from_url "https://getip.pub"
