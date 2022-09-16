@@ -1,6 +1,6 @@
 # myip
 
-返回本机的公网 IP 以及访问外网的 IP.
+返回本机的公网 IP 以及访问外网的 IP，使用 https://getip.pub 提供的服务。
 
 ```sh
  ╰─ $ bin/myip 
