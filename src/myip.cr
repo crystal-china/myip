@@ -12,11 +12,11 @@ begin
 
     case i
     when 0
-      puts ip
+      STDERR.puts ip
     when 1
-      puts "外网: #{ip}"
+      STDERR.puts "外网 IP：#{ip}"
     when 2
-      puts "翻墙: #{ip}"
+      STDERR.puts "翻墙 IP：#{ip}"
     end
   end
 rescue OpenSSL::SSL::Error
