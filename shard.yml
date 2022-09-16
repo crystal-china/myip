@@ -8,6 +8,10 @@ targets:
   myip:
     main: src/myip.cr
 
-crystal: 1.6.0-dev
+dependencies:
+  crystagiri:
+    github: madeindjs/crystagiri
+
+crystal: 1.5.0
 
 license: MIT

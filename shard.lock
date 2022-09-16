@@ -1,0 +1,6 @@
+version: 2.0
+shards:
+  crystagiri:
+    git: https://github.com/madeindjs/crystagiri.git
+    version: 0.3.5
+
