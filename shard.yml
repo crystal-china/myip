@@ -1,0 +1,13 @@
+name: myip
+version: 0.1.0
+
+authors:
+  - Billy.Zheng <vil963@gmail.com>
+
+targets:
+  myip:
+    main: src/myip.cr
+
+crystal: 1.6.0-dev
+
+license: MIT
