@@ -1,6 +1,6 @@
 # myip
 
-返回本机的公网 IP 以及访问外网的 IP，使用 http:/www.ip111.cn 提供的服务。
+返回本机的公网 IP 以及访问外网的公网 IP，使用 http:/www.ip111.cn 以及 http://www.ip138.com 提供的服务。
 
 ```sh
  ╰─ $ bin/myip 
