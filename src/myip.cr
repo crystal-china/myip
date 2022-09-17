@@ -18,13 +18,19 @@ begin
       exit
     end
   end
-rescue OpenSSL::SSL::Error
-  STDERR.puts "visit http://getip.pub failed"
+rescue Socket::Error | OpenSSL::SSL::Error
+  STDERR.puts "visit http://getip.pub failed, please check internet connection."
   exit
 end
 
 iframe.size.times do |i|
-  title, ip = chan.receive
+  select
+  when value = chan.receive
+    title, ip = value
 
-  STDERR.puts "#{title}：#{ip}"
+    STDERR.puts "#{title}：#{ip}"
+  when timeout 5.seconds
+    STDERR.puts "Timeout!"
+    exit
+  end
 end
