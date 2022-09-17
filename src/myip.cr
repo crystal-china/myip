@@ -1,33 +1,30 @@
 require "crystagiri"
 require "./myip/*"
 
-chan = Channel(String).new
+chan = Channel(Tuple(String, String)).new
 
 begin
   doc = Crystagiri::HTML.from_url "https://getip.pub"
 
-  iframe_urls = [] of String
-  iframe = doc.where_tag("iframe") { |tag| iframe_urls << tag.node.attributes["src"].content }
-
-  iframe_urls.each_with_index do |url, i|
+  iframe = doc.where_tag("iframe") do |tag|
     spawn do
-      chan.send Crystagiri::HTML.from_url(url).content.chomp
+      title = tag.node.parent.try(&.parent).not_nil!.xpath_node("td").not_nil!.text
+      url = tag.node.attributes["src"].content
+      ip = Crystagiri::HTML.from_url(url).content.chomp
+
+      chan.send({title, ip})
+    rescue OpenSSL::SSL::Error
+      STDERR.puts "visit #{url} failed"
+      exit
     end
   end
 rescue OpenSSL::SSL::Error
-  STDERR.puts "Can't visit https://getip.pub"
+  STDERR.puts "visit http://getip.pub failed"
   exit
 end
 
-3.times do |i|
-  ip = chan.receive
+iframe.size.times do |i|
+  title, ip = chan.receive
 
-  case i
-  when 0
-    STDERR.puts ip
-  when 1
-    STDERR.puts "外网 IP：#{ip}"
-  when 2
-    STDERR.puts "翻墙 IP：#{ip}"
-  end
+  STDERR.puts "#{title}：#{ip}"
 end
