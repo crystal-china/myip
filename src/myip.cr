@@ -3,6 +3,8 @@ require "./myip/*"
 require "option_parser"
 
 chan = Channel(Tuple(String, String)).new
+terminate = Channel(Nil).new
+done = Channel(Nil).new
 
 def get_ip_from_ip138(chan)
   spawn do
@@ -84,15 +86,35 @@ USAGE
 
   size = output_i138 ? iframe_size + 1 : iframe_size
 
-  size.times do |i|
-    select
-    when value = chan.receive
-      title, ip = value
+  spawn do
+    loop do
+      select
+      when value = chan.receive
+        title, ip = value
 
-      STDERR.puts "#{title}#{ip}"
-    when timeout 5.seconds
-      STDERR.puts "Timeout!"
-      exit
+        STDERR.puts "#{title}#{ip}"
+      when terminate.receive?
+        break
+      when timeout 5.seconds
+        STDERR.puts "Timeout!"
+        exit
+      end
     end
+    done.close
   end
+
+  terminate.close
+  done.receive?
+
+  # size.times do |i|
+  #   select
+  #   when value = chan.receive
+  #     title, ip = value
+
+  #     STDERR.puts "#{title}#{ip}"
+  #   when timeout 5.seconds
+  #     STDERR.puts "Timeout!"
+  #     exit
+  #   end
+  # end
 end
