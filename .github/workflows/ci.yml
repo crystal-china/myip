@@ -1,6 +1,6 @@
 on:
   push:
-    branchs:
+    branches:
       - master
       - main
 
