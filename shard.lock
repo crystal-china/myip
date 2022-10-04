@@ -1,5 +1,9 @@
 version: 2.0
 shards:
+  ameba:
+    git: https://github.com/crystal-ameba/ameba.git
+    version: 0.14.4
+
   crystagiri:
     git: https://github.com/madeindjs/crystagiri.git
     version: 0.3.5

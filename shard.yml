@@ -12,6 +12,11 @@ dependencies:
   crystagiri:
     github: madeindjs/crystagiri
 
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 0.14
+
 crystal: 1.5.0
 
 license: MIT
