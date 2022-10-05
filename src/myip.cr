@@ -84,7 +84,7 @@ USAGE
 
   size = output_i138 ? iframe_size + 1 : iframe_size
 
-  size.times do |i|
+  size.times do
     select
     when value = chan.receive
       title, ip = value
