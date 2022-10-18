@@ -64,6 +64,11 @@ USAGE
       exit
     end
 
+    parser.on("-v", "--version", "Show version") do
+      puts Myip::VERSION
+      exit
+    end
+
     parser.invalid_option do |flag|
       STDERR.puts "Invalid option: #{flag}.\n\n"
       STDERR.puts parser
