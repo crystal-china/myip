@@ -31,6 +31,8 @@ def get_ip_from_ip111(chan)
       rescue OpenSSL::SSL::Error
         STDERR.puts "visit #{url} failed"
         exit
+      rescue ArgumentError
+        STDERR.puts "#{url} return 500"
       end
     end
 
