@@ -1,19 +1,37 @@
 require "crystagiri"
 require "./myip/*"
 require "option_parser"
+require "json"
 
 chan = Channel(Tuple(String, String)).new
+
+def get_ip_from_ib_sb(chan)
+  spawn do
+    url = "https://api.ip.sb/geoip"
+    doc = Crystagiri::HTML.from_url url, follow: true
+    result = JSON.parse(doc.content)
+    chan.send({"ip.sb/geoip：", "IP: #{result["ip"]}, , City: #{result["city"]}, ISP: #{result["isp"]}"})
+  rescue Socket::Error | OpenSSL::SSL::Error
+    STDERR.puts "visit https://api.ip.sb/geoip failed, please check internet connection."
+    exit
+  rescue ArgumentError
+    STDERR.puts "#{url} return 500"
+  end
+end
 
 def get_ip_from_ip138(chan)
   spawn do
     doc = Crystagiri::HTML.from_url "http://www.ip138.com", follow: true
     ip138_url = doc.at_css("iframe").not_nil!.node.attributes["src"].content
-    doc = Crystagiri::HTML.from_url "http:#{ip138_url}"
+    url = "http:#{ip138_url}"
+    doc = Crystagiri::HTML.from_url url
 
     chan.send({"ip138.com：", doc.at_css("body p").not_nil!.content.strip})
   rescue Socket::Error | OpenSSL::SSL::Error
     STDERR.puts "visit http://www.ip138.com failed, please check internet connection."
     exit
+  rescue ArgumentError
+    STDERR.puts "#{url} return 500"
   end
 end
 
@@ -43,11 +61,8 @@ def get_ip_from_ip111(chan)
   end
 end
 
-def output(chan, size)
-end
-
 at_exit do
-  output_i138 = false
+  output_location = false
 
   OptionParser.parse do |parser|
     parser.banner = <<-USAGE
@@ -56,7 +71,8 @@ USAGE
 
     parser.on("-l", "--location", "Use ip138.com to get more accurate ip location information.") do
       get_ip_from_ip138(chan)
-      output_i138 = true
+      get_ip_from_ib_sb(chan)
+      output_location = true
     end
 
     parser.on("-h", "--help", "Show this help message and exit") do
@@ -89,7 +105,7 @@ USAGE
 
   STDERR.puts "ip111.cn：#{title}：#{ip}"
 
-  size = output_i138 ? iframe_size + 1 : iframe_size
+  size = output_location ? iframe_size + 2 : iframe_size
 
   size.times do
     select
