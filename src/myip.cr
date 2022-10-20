@@ -10,10 +10,9 @@ def get_ip_from_ib_sb(chan)
     url = "https://api.ip.sb/geoip"
     doc = Crystagiri::HTML.from_url url, follow: true
     result = JSON.parse(doc.content)
-    chan.send({"ip.sb/geoip：", "IP: #{result["ip"]}, , City: #{result["city"]}, ISP: #{result["isp"]}"})
+    chan.send({"ip.sb/geoip：", "IP: #{result["ip"]}, City: #{result["city"]}, ISP: #{result["isp"]}"})
   rescue Socket::Error | OpenSSL::SSL::Error
     STDERR.puts "visit https://api.ip.sb/geoip failed, please check internet connection."
-    exit
   rescue ArgumentError
     STDERR.puts "#{url} return 500"
   end
@@ -29,7 +28,6 @@ def get_ip_from_ip138(chan)
     chan.send({"ip138.com：", doc.at_css("body p").not_nil!.content.strip})
   rescue Socket::Error | OpenSSL::SSL::Error
     STDERR.puts "visit http://www.ip138.com failed, please check internet connection."
-    exit
   rescue ArgumentError
     STDERR.puts "#{url} return 500"
   end
@@ -48,7 +46,6 @@ def get_ip_from_ip111(chan)
         chan.send({"ip111.cn：#{title}：", ip})
       rescue OpenSSL::SSL::Error
         STDERR.puts "visit #{url} failed"
-        exit
       rescue ArgumentError
         STDERR.puts "#{url} return 500"
       end
