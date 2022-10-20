@@ -10,7 +10,10 @@ def get_ip_from_ib_sb(chan)
     url = "https://api.ip.sb/geoip"
     doc = Crystagiri::HTML.from_url url, follow: true
     result = JSON.parse(doc.content)
-    chan.send({"ip.sb/geoip：", "IP: #{result["ip"]}, City: #{result["city"]}, ISP: #{result["isp"]}"})
+    io = IO::Memory.new
+    PrettyPrint.format(result, io, 79)
+    io.rewind
+    chan.send({"ip.sb/geoip：", io.gets_to_end})
   rescue Socket::Error | OpenSSL::SSL::Error
     STDERR.puts "visit https://api.ip.sb/geoip failed, please check internet connection."
   rescue ArgumentError
