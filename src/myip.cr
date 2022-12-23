@@ -14,8 +14,10 @@ def get_ip_from_ib_sb(chan)
     PrettyPrint.format(result, io, 79)
     io.rewind
     chan.send({"ip.sb/geoip：", io.gets_to_end})
-  rescue Socket::Error | OpenSSL::SSL::Error
-    STDERR.puts "visit https://api.ip.sb/geoip failed, please check internet connection."
+  rescue Socket::Error
+    STDERR.puts "visit #{url} failed, please check internet connection."
+  rescue ex : OpenSSL::SSL::Error
+    STDERR.puts ex.message
   rescue ArgumentError
     STDERR.puts "#{url} return 500"
   end
@@ -29,8 +31,10 @@ def get_ip_from_ip138(chan)
     doc = Crystagiri::HTML.from_url url
 
     chan.send({"ip138.com：", doc.at_css("body p").not_nil!.content.strip})
-  rescue Socket::Error | OpenSSL::SSL::Error
-    STDERR.puts "visit http://www.ip138.com failed, please check internet connection."
+  rescue Socket::Error
+    STDERR.puts "visit #{url} failed, please check internet connection."
+  rescue ex : OpenSSL::SSL::Error
+    STDERR.puts ex.message
   rescue ArgumentError
     STDERR.puts "#{url} return 500"
   end
@@ -38,7 +42,8 @@ end
 
 def get_ip_from_ip111(chan)
   begin
-    doc = Crystagiri::HTML.from_url "http://www.ip111.cn"
+    ip111_url = "http://www.ip111.cn"
+    doc = Crystagiri::HTML.from_url ip111_url
 
     iframe = doc.where_tag("iframe") do |tag|
       spawn do
@@ -47,16 +52,24 @@ def get_ip_from_ip111(chan)
         title = tag.node.parent.try(&.parent).try(&.parent).not_nil!.xpath_node("div[@class='card-header']").not_nil!.content.strip
 
         chan.send({"ip111.cn：#{title}：", ip})
-      rescue OpenSSL::SSL::Error
-        STDERR.puts "visit #{url} failed"
+      rescue Socket::Error
+        STDERR.puts "visit #{url} failed, please check internet connection."
+      rescue ex : OpenSSL::SSL::Error
+        STDERR.puts ex.message
       rescue ArgumentError
         STDERR.puts "#{url} return 500"
       end
     end
 
     {doc, iframe.size}
-  rescue Socket::Error | OpenSSL::SSL::Error
-    STDERR.puts "visit http://getip.pub failed, please check internet connection."
+  rescue Socket::Error
+    STDERR.puts "visit #{ip111_url} failed, please check internet connection."
+    exit
+  rescue ex : OpenSSL::SSL::Error
+    STDERR.puts ex.message
+    exit
+  rescue ArgumentError
+    STDERR.puts "#{ip111_url} return 500"
     exit
   end
 end
