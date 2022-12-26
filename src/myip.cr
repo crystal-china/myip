@@ -16,10 +16,10 @@ def get_ip_from_ib_sb(chan)
     chan.send({"ip.sb/geoip：", io.gets_to_end})
   rescue Socket::Error
     STDERR.puts "visit #{url} failed, please check internet connection."
-  rescue ex : OpenSSL::SSL::Error
-    STDERR.puts ex.message
   rescue ArgumentError
     STDERR.puts "#{url} return 500"
+  rescue ex
+    STDERR.puts ex.message
   end
 end
 
@@ -33,10 +33,10 @@ def get_ip_from_ip138(chan)
     chan.send({"ip138.com：", doc.at_css("body p").not_nil!.content.strip})
   rescue Socket::Error
     STDERR.puts "visit #{url} failed, please check internet connection."
-  rescue ex : OpenSSL::SSL::Error
-    STDERR.puts ex.message
   rescue ArgumentError
     STDERR.puts "#{url} return 500"
+  rescue ex
+    STDERR.puts ex.message
   end
 end
 
@@ -54,10 +54,10 @@ def get_ip_from_ip111(chan)
         chan.send({"ip111.cn：#{title}：", ip})
       rescue Socket::Error
         STDERR.puts "visit #{url} failed, please check internet connection."
-      rescue ex : OpenSSL::SSL::Error
-        STDERR.puts ex.message
       rescue ArgumentError
         STDERR.puts "#{url} return 500"
+      rescue ex
+        STDERR.puts ex.message
       end
     end
 
@@ -65,11 +65,11 @@ def get_ip_from_ip111(chan)
   rescue Socket::Error
     STDERR.puts "visit #{ip111_url} failed, please check internet connection."
     exit
-  rescue ex : OpenSSL::SSL::Error
-    STDERR.puts ex.message
-    exit
   rescue ArgumentError
     STDERR.puts "#{ip111_url} return 500"
+    exit
+  rescue ex
+    STDERR.puts ex.message
     exit
   end
 end
