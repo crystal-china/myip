@@ -131,4 +131,9 @@ USAGE
       exit
     end
   end
+
+  {% if flag?(:win32) %}
+    puts "Pressing any key to exit."
+    STDIN.read_char
+  {% end %}
 end
