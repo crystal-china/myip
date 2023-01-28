@@ -1,10 +1,7 @@
 on:
   push:
     tags:
-      - "v*.*.*"
-    branches:
-      - master
-      - main
+      - "test2"
 
 jobs:
   build:
@@ -24,16 +21,20 @@ jobs:
         run: shards check || shards install --without-development
       - name: package information
         run: |
-          echo "BINARY_NAME=myip" >> $GITHUB_ENV
-          echo "PKG_ARCH=x86_64" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          echo "BINARY_NAME=myip" >> $Env:GITHUB_ENV
+          echo "PKG_ARCH=x86_64" >> $Env:GITHUB_ENV
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $Env:GITHUB_ENV
+          echo "PLATFORM=pc-windows-msvc.zip" >> $Env:GITHUB_ENV
+      - name: set asset name
+        run: |
+          echo "ASSERT_NAME=${{ env.BINARY_NAME }}-${{ env.RELEASE_VERSION }}-${{ env.PKG_ARCH }}-${{env.PLATFORM }}" >> $Env:GITHUB_ENV
       - name: release binary
         id: release
         run: |
           shards build --production --release --progress --no-debug --link-flags="-s -Wl,-z,relro,-z,now"
-          ASSERT_NAME=${BINARY_NAME}-${RELEASE_VERSION}-${PKG_ARCH}-unknown-linux-gnu.tar.gz
-          tar zcf ${ASSERT_NAME} bin/${BINARY_NAME} LICENSE
-          echo ::set-output name=ASSERT_NAME::${ASSERT_NAME}
+          echo ${{ env.GITHUB_REF }}
+          echo 7z a ${{ env.ASSERT_NAME }} bin/${{ env.BINARY_NAME }}.exe LICENSE
+          echo "ASSERT_NAME=$ASSERT_NAME" >> $GITHUB_OUTPUT
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
