@@ -1,10 +1,7 @@
 on:
-  push:
-    tags:
-      - "v*.*.*"
-    # branches:
-    #   - master
-    #   - main
+  # push:
+  # tags:
+  #   - "v*.*.*"
 
 jobs:
   call-ci:
