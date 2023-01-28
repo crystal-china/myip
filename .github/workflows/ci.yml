@@ -1,8 +1,8 @@
 on:
   push:
-    branches:
-      - master
-      - main
+    # branches:
+    #   - master
+    #   - main
   workflow_call:
 
 jobs:
