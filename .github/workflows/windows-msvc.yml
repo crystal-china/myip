@@ -3,7 +3,7 @@ on:
     tags:
       - "v*.*.*"
     branches:
-      - master
+      # - master
       - main
 
 jobs:

@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      # - master
       - main
   workflow_call:
 
