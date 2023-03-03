@@ -9,8 +9,8 @@ targets:
     main: src/myip.cr
 
 dependencies:
-  crystagiri:
-    github: madeindjs/crystagiri
+  lexbor:
+    github: kostya/lexbor
 
 development_dependencies:
   ameba:

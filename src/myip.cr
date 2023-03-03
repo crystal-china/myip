@@ -1,15 +1,31 @@
-require "crystagiri"
+require "lexbor"
+require "http/client"
 require "./myip/*"
 require "option_parser"
 require "json"
 
 chan = Channel(Tuple(String, String)).new
 
+def from_url(url : String, follow : Bool = false) : Lexbor::Parser
+  begin
+    response = HTTP::Client.get url
+    if response.status_code == 200
+      return Lexbor::Parser.new(response.body)
+    elsif follow && response.status_code == 301
+      from_url response.headers["Location"], follow: true
+    else
+      raise ArgumentError.new "Host returned #{response.status_code}"
+    end
+  rescue Socket::Error
+    raise Socket::Error.new "Host #{url} cannot be fetched"
+  end
+end
+
 def get_ip_from_ib_sb(chan)
   spawn do
     url = "https://api.ip.sb/geoip"
-    doc = Crystagiri::HTML.from_url url, follow: true
-    result = JSON.parse(doc.content)
+    response = HTTP::Client.get(url)
+    result = JSON.parse(response.body)
     io = IO::Memory.new
     PrettyPrint.format(result, io, 79)
     io.rewind
@@ -25,12 +41,13 @@ end
 
 def get_ip_from_ip138(chan)
   spawn do
-    doc = Crystagiri::HTML.from_url "http://www.ip138.com", follow: true
-    ip138_url = doc.at_css("iframe").not_nil!.node.attributes["src"].content
+    url = "http://www.ip138.com"
+    doc = from_url(url, follow: true)
+    ip138_url = doc.css("iframe").first.attribute_by("src")
     url = "http:#{ip138_url}"
-    doc = Crystagiri::HTML.from_url url
+    doc = from_url url
 
-    chan.send({"ip138.com：", doc.at_css("body p").not_nil!.content.strip})
+    chan.send({"ip138.com：", doc.css("body p").first.tag_text.strip})
   rescue Socket::Error
     STDERR.puts "visit #{url} failed, please check internet connection."
   rescue ArgumentError
@@ -43,13 +60,13 @@ end
 def get_ip_from_ip111(chan)
   begin
     ip111_url = "http://www.ip111.cn"
-    doc = Crystagiri::HTML.from_url ip111_url
+    doc = from_url(ip111_url, follow: true)
 
-    iframe = doc.where_tag("iframe") do |tag|
+    iframe = doc.nodes("iframe").map do |node|
       spawn do
-        url = tag.node.attributes["src"].content
-        ip = Crystagiri::HTML.from_url(url).at_css("body").not_nil!.content
-        title = tag.node.parent.try(&.parent).try(&.parent).not_nil!.xpath_node("div[@class='card-header']").not_nil!.content.strip
+        url = node.attribute_by("src").not_nil!
+        ip = from_url(url).body!.tag_text.strip
+        title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
 
         chan.send({"ip111.cn：#{title}：", ip})
       rescue Socket::Error
@@ -113,8 +130,8 @@ USAGE
 
   doc, iframe_size = get_ip_from_ip111(chan)
 
-  title = doc.at_css(".card-header").not_nil!.content.strip
-  ip = doc.at_css(".card-body p").not_nil!.content.strip
+  title = doc.css(".card-header").first.tag_text.strip
+  ip = doc.css(".card-body p").first.tag_text.strip
 
   STDERR.puts "ip111.cn：#{title}：#{ip}"
 
