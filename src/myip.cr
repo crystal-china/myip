@@ -7,18 +7,16 @@ require "json"
 chan = Channel(Tuple(String, String)).new
 
 def from_url(url : String, follow : Bool = false) : Lexbor::Parser
-  begin
-    response = HTTP::Client.get url
-    if response.status_code == 200
-      return Lexbor::Parser.new(response.body)
-    elsif follow && response.status_code == 301
-      from_url response.headers["Location"], follow: true
-    else
-      raise ArgumentError.new "Host returned #{response.status_code}"
-    end
-  rescue Socket::Error
-    raise Socket::Error.new "Host #{url} cannot be fetched"
+  response = HTTP::Client.get url
+  if response.status_code == 200
+    Lexbor::Parser.new(response.body)
+  elsif follow && response.status_code == 301
+    from_url response.headers["Location"], follow: true
+  else
+    raise ArgumentError.new "Host returned #{response.status_code}"
   end
+rescue Socket::Error
+  raise Socket::Error.new "Host #{url} cannot be fetched"
 end
 
 def get_ip_from_ib_sb(chan)
@@ -58,37 +56,35 @@ def get_ip_from_ip138(chan)
 end
 
 def get_ip_from_ip111(chan)
-  begin
-    ip111_url = "http://www.ip111.cn"
-    doc = from_url(ip111_url, follow: true)
+  ip111_url = "http://www.ip111.cn"
+  doc = from_url(ip111_url, follow: true)
 
-    iframe = doc.nodes("iframe").map do |node|
-      spawn do
-        url = node.attribute_by("src").not_nil!
-        ip = from_url(url).body!.tag_text.strip
-        title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
+  iframe = doc.nodes("iframe").map do |node|
+    spawn do
+      url = node.attribute_by("src").not_nil!
+      ip = from_url(url).body!.tag_text.strip
+      title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
 
-        chan.send({"ip111.cn：#{title}：", ip})
-      rescue Socket::Error
-        STDERR.puts "visit #{url} failed, please check internet connection."
-      rescue ArgumentError
-        STDERR.puts "#{url} return 500"
-      rescue ex
-        STDERR.puts ex.message
-      end
+      chan.send({"ip111.cn：#{title}：", ip})
+    rescue Socket::Error
+      STDERR.puts "visit #{url} failed, please check internet connection."
+    rescue ArgumentError
+      STDERR.puts "#{url} return 500"
+    rescue ex
+      STDERR.puts ex.message
     end
-
-    {doc, iframe.size}
-  rescue Socket::Error
-    STDERR.puts "visit #{ip111_url} failed, please check internet connection."
-    exit
-  rescue ArgumentError
-    STDERR.puts "#{ip111_url} return 500"
-    exit
-  rescue ex
-    STDERR.puts ex.message
-    exit
   end
+
+  {doc, iframe.size}
+rescue Socket::Error
+  STDERR.puts "visit #{ip111_url} failed, please check internet connection."
+  exit
+rescue ArgumentError
+  STDERR.puts "#{ip111_url} return 500"
+  exit
+rescue ex
+  STDERR.puts ex.message
+  exit
 end
 
 at_exit do
