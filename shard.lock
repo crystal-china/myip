@@ -2,7 +2,7 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/crystal-ameba/ameba.git
-    version: 1.4.2+git.commit.3fbbe3986eef7e0e22b9decc3e37c2110f2a10eb
+    version: 1.4.3
 
   lexbor:
     git: https://github.com/kostya/lexbor.git
