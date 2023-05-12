@@ -11,12 +11,13 @@ targets:
 dependencies:
   lexbor:
     github: kostya/lexbor
+    branch: master
 
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
     version: ~> 1.4
 
-crystal: 1.5.0
+crystal: 1.8.0
 
 license: MIT

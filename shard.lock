@@ -6,5 +6,5 @@ shards:
 
   lexbor:
     git: https://github.com/kostya/lexbor.git
-    version: 3.1.0
+    version: 3.1.2+git.commit.24446a4cfc7aaf1e1f651ec7e8f5e92e3ff16bf7
 
