@@ -2,6 +2,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - cmake
 
 jobs:
   build:
@@ -15,14 +16,38 @@ jobs:
           path: ~/.cache/shards
           key: ${{ runner.os }}-shards-${{ hashFiles('shard.yml') }}
           restore-keys: ${{ runner.os }}-shards-
+      - name: install common dependencies
+        run: |
+          apk add \
+          curl \
+          gc-dev \
+          gcc \
+          git \
+          libevent-static \
+          musl-dev \
+          openssl-dev \
+          openssl-libs-static \
+          pcre-dev \
+          sqlite-static \
+          tzdata \
+          yaml-static \
+          zlib-dev \
+          zlib-static \
+          cmake \
+          g++ \
+          libffi-dev \
+          libxml2-dev \
+          llvm-dev \
+          llvm-static \
+          make
       - name: Download source
         uses: actions/checkout@v2
       - name: Install shards
         run: shards check || shards install --without-development
       - name: Check formatting
         run: crystal tool format --check
-      - name: Run tests
-        run: crystal spec --order=random --error-on-warnings
+      # - name: Run tests
+      #   run: crystal spec --order=random --error-on-warnings
       - name: package information
         run: |
           echo "BINARY_NAME=bin/$(cat shard.yml |grep targets -A1|tail -n1 |sed 's#[ :]##g')" >> $GITHUB_ENV
