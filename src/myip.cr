@@ -18,7 +18,7 @@ class Myip
       io.rewind
       chan.send({"ip.sb/geoip：", io.gets_to_end})
     rescue ex : ArgumentError | Socket::Error
-      STDERR.puts ex.message
+      chan.send({"ip.sb/geoip：", ex.message.not_nil!})
     end
   end
 
@@ -32,7 +32,7 @@ class Myip
 
       chan.send({"ip138.com：", doc.css("body p").first.tag_text.strip})
     rescue ex : ArgumentError | Socket::Error
-      STDERR.puts ex.message
+      chan.send({"ip138.com：", ex.message.not_nil!})
     end
   end
 
@@ -48,7 +48,7 @@ class Myip
 
         chan.send({"ip111.cn：#{title}：", ip})
       rescue ex : ArgumentError | Socket::Error
-        STDERR.puts ex.message unless chan.closed?
+        STDERR.puts "ip111.cn：#{ex.message}" unless chan.closed?
         chan.close
       end
     end
