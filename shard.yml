@@ -6,7 +6,7 @@ authors:
 
 targets:
   myip:
-    main: src/myip.cr
+    main: src/cli.cr
 
 dependencies:
   lexbor:
