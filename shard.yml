@@ -1,5 +1,5 @@
 name: myip
-version: 0.4.4
+version: 0.4.5
 
 authors:
   - Billy.Zheng <vil963@gmail.com>
@@ -11,12 +11,10 @@ targets:
 dependencies:
   lexbor:
     github: kostya/lexbor
-    branch: master
 
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
-    version: ~> 1.4
 
 crystal: 1.8.0
 
