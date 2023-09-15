@@ -5,8 +5,6 @@ require "json"
 
 class Myip
   getter chan = Channel(Tuple(String, String)).new
-  property? output_location = false
-  property? ip111_response_500 = false
 
   def get_ip_from_ib_sb
     spawn do
@@ -16,7 +14,7 @@ class Myip
       io = IO::Memory.new
       PrettyPrint.format(result, io, 79)
       io.rewind
-      chan.send({"ip.sb/geoip：", io.gets_to_end})
+      chan.send({"ip.sb/geoip：您访问外网地址信息：\n", io.gets_to_end})
     rescue ex : ArgumentError | Socket::Error
       chan.send({"ip.sb/geoip：", ex.message.not_nil!})
     end
@@ -36,57 +34,12 @@ class Myip
     end
   end
 
-  def get_ip_from_ip111
-    ip111_url = "http://www.ip111.cn"
-    doc = from_url(ip111_url, follow: true)
-
-    iframe = doc.nodes("iframe").map do |node|
-      spawn do
-        url = node.attribute_by("src").not_nil!
-        ip = from_url(url).body!.tag_text.strip
-        title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
-
-        chan.send({"ip111.cn：#{title}：", ip})
-      rescue ex : ArgumentError | Socket::Error
-        STDERR.puts "ip111.cn：#{ex.message}" unless chan.closed?
-        chan.close
-      end
-    end
-
-    {doc, iframe.size}
-  rescue ex : ArgumentError | Socket::Error
-    STDERR.puts ex.message
-  end
-
   def process
-    size = 0
-
-    if output_location?
-      size = 2
-    else
-      if (result = get_ip_from_ip111)
-        doc, iframe_size = result
-        title = doc.css(".card-header").first.tag_text.strip
-        ip = doc.css(".card-body p").first.tag_text.strip
-
-        STDERR.puts "ip111.cn：#{title}：#{ip}"
-        size = iframe_size
-      end
-    end
-
-    size.times do
+    2.times do
       select
-      when value = chan.receive?
-        if value.nil?
-          if !output_location?
-            STDERR.puts "Trying `myip -l` again."
-            self.ip111_response_500 = true
-            break
-          end
-        else
-          title, ip = value
-          STDERR.puts "#{title}#{ip}"
-        end
+      when value = chan.receive
+        title, ip = value
+        STDERR.puts "#{title}#{ip}"
       when timeout 5.seconds
         STDERR.puts "Timeout!"
         exit
