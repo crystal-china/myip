@@ -1,14 +1,25 @@
 # myip
 
-返回本机的公网 IP 以及访问外网的公网 IP，使用 http:/www.ip111.cn 以及 http://www.ip138.com 提供的服务。
+返回本机的公网 IP 以及访问外网的公网 IP，使用 http://www.ip138.com 以及 http://ib.sb/geoip 提供的服务。
 查看[文档](https://crystal-china.github.io/myip/)获取更多帮助
 
 ```sh
  ╰─ $ bin/myip 
-ip111.cn：从国内测试：123.123.123.123 中国 北京市
-ip138.com：您的iP地址是：[123.123.123.123 ] 来自：中国北京市西城区 联通
-ip111.cn：从国外测试：111.111.111.111 美国 洛杉矶
-ip111.cn：从谷歌测试：111.111.111.111 美国 洛杉矶
+ ╰─ $ myip
+ip138.com：您的iP地址是：[1.2.3.4 ] 来自：中国广东 联通
+ip.sb/geoip：您访问外网地址信息：
+{"organization" => "Khalid Group",
+ "longitude" => -3.684,
+ "timezone" => "Europe/Madrid",
+ "isp" => "Khalid Group",
+ "offset" => 3600,
+ "asn" => 147291,
+ "asn_organization" => "KHALID GROUP",
+ "country" => "Spain",
+ "ip" => "5.6.7.8",
+ "latitude" => 40.4172,
+ "continent_code" => "EU",
+ "country_code" => "ES"}
 ```
 
 ## Contributing
