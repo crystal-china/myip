@@ -41,7 +41,7 @@ class Myip
         title, ip = value
         STDERR.puts "#{title}#{ip}"
       when timeout 5.seconds
-        STDERR.puts "Timeout!"
+        STDERR.puts "Timeout, check your network connection!"
         exit
       end
     end
