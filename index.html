@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 1.7.3">
-<meta name="crystal_docs.project_version" content="0.4.5">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Crystal Docs 1.9.2">
+<meta name="crystal_docs.project_version" content="0.4.6">
 <meta name="crystal_docs.project_name" content="myip">
 
 
@@ -13,7 +14,7 @@
 <script type="text/javascript" src="js/doc.js"></script>
 
   <meta name="repository-name" content="myip">
-  <title>myip 0.4.5</title>
+  <title>myip 0.4.6</title>
   <script type="text/javascript">
   CrystalDocs.base_path = "";
   </script>
@@ -22,9 +23,14 @@
 
 <svg class="hidden">
   <symbol id="octicon-link" viewBox="0 0 16 16">
-    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+    <path fill="currentColor" fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
   </symbol>
 </svg>
+<input type="checkbox" id="sidebar-btn">
+<label for="sidebar-btn" id="sidebar-btn-label">
+  <svg class="open" xmlns="http://www.w3.org/2000/svg" height="2em" width="2em" viewBox="0 0 512 512"><title>Open Sidebar</title><path fill="currentColor" d="M80 96v64h352V96H80zm0 112v64h352v-64H80zm0 112v64h352v-64H80z"></path></svg>
+  <svg class="close" xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 512 512"><title>Close Sidebar</title><path fill="currentColor" d="m118.6 73.4-45.2 45.2L210.7 256 73.4 393.4l45.2 45.2L256 301.3l137.4 137.3 45.2-45.2L301.3 256l137.3-137.4-45.2-45.2L256 210.7Z"></path></svg>
+</label>
 <div class="sidebar">
   <div class="sidebar-header">
     <div class="search-box">
@@ -39,7 +45,7 @@
       </h1>
 
       <span class="project-version">
-        0.4.5
+        0.4.6
       </span>
     </div>
   </div>
@@ -67,13 +73,24 @@
     <use href="#octicon-link"/>
   </svg>
 </a>myip</h1>
-<p>返回本机的公网 IP 以及访问外网的公网 IP，使用 http:/www.ip111.cn 以及 http://www.ip138.com 提供的服务。
+<p>返回本机的公网 IP 以及访问外网的公网 IP，使用 http://www.ip138.com 以及 http://ib.sb/geoip 提供的服务。
 查看<a href="https://crystal-china.github.io/myip/">文档</a>获取更多帮助</p>
 <pre><code class="language-sh"> ╰─ $ bin/myip 
-ip111.cn：从国内测试：123.123.123.123 中国 北京市
-ip138.com：您的iP地址是：[123.123.123.123 ] 来自：中国北京市西城区 联通
-ip111.cn：从国外测试：111.111.111.111 美国 洛杉矶
-ip111.cn：从谷歌测试：111.111.111.111 美国 洛杉矶</code></pre>
+ ╰─ $ myip
+ip138.com：您的iP地址是：[1.2.3.4 ] 来自：中国广东 联通
+ip.sb/geoip：您访问外网地址信息：
+{&quot;organization&quot; =&gt; &quot;Khalid Group&quot;,
+ &quot;longitude&quot; =&gt; -3.684,
+ &quot;timezone&quot; =&gt; &quot;Europe/Madrid&quot;,
+ &quot;isp&quot; =&gt; &quot;Khalid Group&quot;,
+ &quot;offset&quot; =&gt; 3600,
+ &quot;asn&quot; =&gt; 147291,
+ &quot;asn_organization&quot; =&gt; &quot;KHALID GROUP&quot;,
+ &quot;country&quot; =&gt; &quot;Spain&quot;,
+ &quot;ip&quot; =&gt; &quot;5.6.7.8&quot;,
+ &quot;latitude&quot; =&gt; 40.4172,
+ &quot;continent_code&quot; =&gt; &quot;EU&quot;,
+ &quot;country_code&quot; =&gt; &quot;ES&quot;}</code></pre>
 <h2><a id="contributing" class="anchor" href="#contributing">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
