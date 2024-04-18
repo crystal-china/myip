@@ -10,7 +10,7 @@ class Myip
   property chan_send_count : Int32 = 0
   property ip111_chan_send_count : Int32 = 0
 
-  def get_ip_from_ib_sb
+  def ip_from_ib_sb
     self.chan_send_count = chan_send_count() + 1
 
     spawn do
@@ -26,7 +26,7 @@ class Myip
     end
   end
 
-  def get_ip_from_ip111
+  def ip_from_ip111
     # 注意: ip111.cn 仅支持 http, 不支持 https:
     ip111_url = "http://www.ip111.cn"
 
@@ -59,12 +59,12 @@ class Myip
     end
   end
 
-  def get_ip_from_ip138
+  def ip_from_ip138
     self.chan_send_count = chan_send_count + 1
 
     spawn do
       url = "https://www.ip138.com"
-      doc, code = from_url(url, follow: true)
+      doc, _code = from_url(url, follow: true)
       ip138_url = doc.css("iframe").first.attribute_by("src")
       headers = HTTP::Headers{"Origin" => "https://ip.skk.moe"}
 
@@ -73,7 +73,7 @@ class Myip
       if code == 502
         myip = doc.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
         url = "https://www.ip138.com/iplookup.php?ip=#{myip}"
-        doc, code = from_url(url, headers: headers)
+        doc, _code = from_url(url, headers: headers)
 
         output = String.build do |io|
           doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
@@ -102,7 +102,7 @@ class Myip
           spawn do
             details_ip_url = "https://www.ipshudi.com/#{ip}.htm"
 
-            doc, code = from_url(details_ip_url)
+            doc, _code = from_url(details_ip_url)
 
             output = String.build do |io|
               doc.css("div.ft>table>tbody>tr>td").each { |x| io << x.tag_text }
