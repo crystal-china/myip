@@ -1,26 +1,16 @@
 # myip
 
-返回本机的公网 IP 以及访问外网的公网 IP，使用 http://www.ip138.com 以及 http://ib.sb/geoip 提供的服务。
-查看[文档](https://crystal-china.github.io/myip/)获取更多帮助
+返回本机的公网 IP 以及访问外网的公网 IP，匿名使用以下服务:
 
-```sh
- ╰─ $ bin/myip 
- ╰─ $ myip
-ip138.com：您的iP地址是：[1.2.3.4 ] 来自：中国广东 联通
-ip.sb/geoip：您访问外网地址信息：
-{"organization" => "Khalid Group",
- "longitude" => -3.684,
- "timezone" => "Europe/Madrid",
- "isp" => "Khalid Group",
- "offset" => 3600,
- "asn" => 147291,
- "asn_organization" => "KHALID GROUP",
- "country" => "Spain",
- "ip" => "5.6.7.8",
- "latitude" => 40.4172,
- "continent_code" => "EU",
- "country_code" => "ES"}
-```
+http://www.ip111.cn/ 获取 IP 信息.
+https://www.ipshudi.com 针对 ip111.cn 获取的 IP 信息,查询更加详细的信息.
+
+此外,也额外访问以下网址获取信息作为补充
+
+http://www.ip138.com 获取国内 IP 信息
+https://api.ip.sb/geoip 获取外网的详细 IP 信息
+
+![ip111.png](images/ip111.png)
 
 ## Contributing
 
