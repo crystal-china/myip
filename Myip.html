@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Crystal Docs 1.9.2">
-<meta name="crystal_docs.project_version" content="0.4.6">
+<meta name="generator" content="Crystal Docs 1.11.2">
+<meta name="crystal_docs.project_version" content="0.4.8">
 <meta name="crystal_docs.project_name" content="myip">
 
 
@@ -14,7 +14,7 @@
 <script type="text/javascript" src="js/doc.js"></script>
 
   <meta name="repository-name" content="myip">
-  <title>Myip - myip 0.4.6</title>
+  <title>Myip - myip 0.4.8</title>
   <script type="text/javascript">
     CrystalDocs.base_path = "";
   </script>
@@ -45,7 +45,7 @@
       </h1>
 
       <span class="project-version">
-        0.4.6
+        0.4.8
       </span>
     </div>
   </div>
@@ -104,14 +104,14 @@
   </h2>
   
     
-      <a href="https://github.com/crystal-china/myip/blob/v0.4.6/src/myip.cr#L6" target="_blank">
+      <a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L8" target="_blank">
         myip.cr
       </a>
     
     <br/>
   
     
-      <a href="https://github.com/crystal-china/myip/blob/v0.4.6/src/myip/version.cr#L1" target="_blank">
+      <a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip/version.cr#L1" target="_blank">
         myip/version.cr
       </a>
     
@@ -145,6 +145,8 @@
 
 
 
+
+
   <h2>
     <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
   <svg class="octicon-link" aria-hidden="true">
@@ -156,17 +158,42 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#chan%3AChannel%28%7BString%2CString%7D%29-instance-method" class="signature"><strong>#chan</strong> : Channel({String, String})</a>
+        <a href="#chan%3AChannel%28%7BString%2CString%2CString%3F%7D%29-instance-method" class="signature"><strong>#chan</strong> : Channel({String, String, String?})</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#get_ip_from_ib_sb-instance-method" class="signature"><strong>#get_ip_from_ib_sb</strong></a>
+        <a href="#chan_send_count%3AInt32-instance-method" class="signature"><strong>#chan_send_count</strong> : Int32</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#get_ip_from_ip138-instance-method" class="signature"><strong>#get_ip_from_ip138</strong></a>
+        <a href="#chan_send_count%3D%28chan_send_count%3AInt32%29-instance-method" class="signature"><strong>#chan_send_count=</strong>(chan_send_count : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#ip111_chan_send_count%3AInt32-instance-method" class="signature"><strong>#ip111_chan_send_count</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#ip111_chan_send_count%3D%28ip111_chan_send_count%3AInt32%29-instance-method" class="signature"><strong>#ip111_chan_send_count=</strong>(ip111_chan_send_count : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#ip_from_ib_sb-instance-method" class="signature"><strong>#ip_from_ib_sb</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#ip_from_ip111-instance-method" class="signature"><strong>#ip_from_ip111</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#ip_from_ip138-instance-method" class="signature"><strong>#ip_from_ip138</strong></a>
         
       </li>
     
@@ -176,8 +203,6 @@
       </li>
     
   </ul>
-
-
 
 
 
@@ -192,7 +217,13 @@
     
 
 
+    
+
+
   
+    
+
+
     
 
 
@@ -210,6 +241,8 @@
 
 
 
+
+
   <h2>
     <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
   <svg class="octicon-link" aria-hidden="true">
@@ -219,50 +252,130 @@
     Instance Method Detail
   </h2>
   
-    <div class="entry-detail" id="chan:Channel({String,String})-instance-method">
+    <div class="entry-detail" id="chan:Channel({String,String,String?})-instance-method">
       <div class="signature">
         
-        def <strong>chan</strong> : Channel({String, String})
+        def <strong>chan</strong> : Channel({String, String, String?})
 
-        <a class="method-permalink" href="#chan%3AChannel%28%7BString%2CString%7D%29-instance-method">#</a>
+        <a class="method-permalink" href="#chan%3AChannel%28%7BString%2CString%2CString%3F%7D%29-instance-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/crystal-china/myip/blob/v0.4.6/src/myip.cr#L7" target="_blank">View source</a>]
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L9" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="get_ip_from_ib_sb-instance-method">
+    <div class="entry-detail" id="chan_send_count:Int32-instance-method">
       <div class="signature">
         
-        def <strong>get_ip_from_ib_sb</strong>
+        def <strong>chan_send_count</strong> : Int32
 
-        <a class="method-permalink" href="#get_ip_from_ib_sb-instance-method">#</a>
+        <a class="method-permalink" href="#chan_send_count%3AInt32-instance-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/crystal-china/myip/blob/v0.4.6/src/myip.cr#L9" target="_blank">View source</a>]
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L10" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="get_ip_from_ip138-instance-method">
+    <div class="entry-detail" id="chan_send_count=(chan_send_count:Int32)-instance-method">
       <div class="signature">
         
-        def <strong>get_ip_from_ip138</strong>
+        def <strong>chan_send_count=</strong>(chan_send_count : Int32)
 
-        <a class="method-permalink" href="#get_ip_from_ip138-instance-method">#</a>
+        <a class="method-permalink" href="#chan_send_count%3D%28chan_send_count%3AInt32%29-instance-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/crystal-china/myip/blob/v0.4.6/src/myip.cr#L23" target="_blank">View source</a>]
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L10" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="ip111_chan_send_count:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>ip111_chan_send_count</strong> : Int32
+
+        <a class="method-permalink" href="#ip111_chan_send_count%3AInt32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L11" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="ip111_chan_send_count=(ip111_chan_send_count:Int32)-instance-method">
+      <div class="signature">
+        
+        def <strong>ip111_chan_send_count=</strong>(ip111_chan_send_count : Int32)
+
+        <a class="method-permalink" href="#ip111_chan_send_count%3D%28ip111_chan_send_count%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L11" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="ip_from_ib_sb-instance-method">
+      <div class="signature">
+        
+        def <strong>ip_from_ib_sb</strong>
+
+        <a class="method-permalink" href="#ip_from_ib_sb-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L13" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="ip_from_ip111-instance-method">
+      <div class="signature">
+        
+        def <strong>ip_from_ip111</strong>
+
+        <a class="method-permalink" href="#ip_from_ip111-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L29" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="ip_from_ip138-instance-method">
+      <div class="signature">
+        
+        def <strong>ip_from_ip138</strong>
+
+        <a class="method-permalink" href="#ip_from_ip138-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L62" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -278,13 +391,11 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crystal-china/myip/blob/v0.4.6/src/myip.cr#L37" target="_blank">View source</a>]
+          [<a href="https://github.com/crystal-china/myip/blob/v0.4.8/src/myip.cr#L91" target="_blank">View source</a>]
         
       </div>
     </div>
   
-
-
 
 
 </div>
