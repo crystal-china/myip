@@ -32,6 +32,7 @@ end
 myip = Myip.new
 myip.get_ip_from_ip138
 myip.get_ip_from_ib_sb
+myip.get_ip_from_ip111
 myip.process
 
 at_exit do
