@@ -41,7 +41,7 @@ myip.ip_from_ib_sb
 myip.ip_from_ip111
 myip.process
 
-spinner.stop("Done")
+spinner.success("successful!".colorize(:yellow).on_blue.bold.to_s)
 
 at_exit do
   {% if flag?(:win32) %}

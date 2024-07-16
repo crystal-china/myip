@@ -20,11 +20,14 @@ class Myip
     spawn do
       url = "https://api.ip.sb/geoip"
       response = HTTP::Client.get(url)
-      result = JSON.parse(response.body)
+      body = response.body
+      result = JSON.parse(body)
       io = IO::Memory.new
       PrettyPrint.format(result, io, width: 79)
       io.rewind
       chan.send({"#{url}：您访问外网地址信息：", io.gets_to_end, nil})
+    rescue JSON::ParseException
+      chan.send({"#{url}：", body.not_nil!, nil})
     rescue ex : ArgumentError | Socket::Error
       chan.send({"#{url}：", ex.message.not_nil!, nil})
     end
