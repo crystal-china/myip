@@ -5,8 +5,12 @@ require "json"
 require "http/headers"
 require "colorize"
 
+alias Title = String
+alias IPInfo = String
+alias IP = String
+
 class Myip
-  getter chan = Channel(Tuple(String, String, String?)).new
+  getter chan = Channel(Tuple(Title, IPInfo, IP?)).new
   property chan_send_count : Int32 = 0
   property ip111_chan_send_count : Int32 = 0
 
@@ -20,9 +24,9 @@ class Myip
       io = IO::Memory.new
       PrettyPrint.format(result, io, width: 79)
       io.rewind
-      chan.send({"----- Result from: #{url}：您访问外网地址信息：-----", io.gets_to_end, nil})
+      chan.send({"#{url}：您访问外网地址信息：", io.gets_to_end, nil})
     rescue ex : ArgumentError | Socket::Error
-      chan.send({"----- Error from: #{url}：-----", ex.message.not_nil!, nil})
+      chan.send({"#{url}：", ex.message.not_nil!, nil})
     end
   end
 
@@ -35,7 +39,7 @@ class Myip
     title = doc.css(".card-header").first.tag_text.strip
     ipinfo = doc.css(".card-body p").first.tag_text.strip
 
-    STDERR.puts "----- Result from #{ip111_url}：-----", "#{title}：#{ipinfo}"
+    STDERR.puts "#{ip111_url}：".colorize(:yellow).on_blue.bold, "#{title}：#{ipinfo}"
 
     headers = HTTP::Headers{"Referer" => "http://www.ip111.cn/"}
 
@@ -52,9 +56,9 @@ class Myip
 
         ip = ipinfo[/[a-z0-9:.]+/]
 
-        chan.send({"----- Result from #{ip111_url}：#{url}：-----", "#{title}：#{ipinfo}", ip})
+        chan.send({"#{ip111_url}：#{url}：", "#{title}：#{ipinfo}", ip})
       rescue ex : ArgumentError | Socket::Error
-        chan.send({"----- Error from: #{ip111_url}：#{url}：-----", ex.message.not_nil!, nil})
+        chan.send({"#{ip111_url}：#{url}：", ex.message.not_nil!, nil})
       end
     end
   end
@@ -79,12 +83,12 @@ class Myip
           doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
         end
 
-        chan.send({"----- Result from: #{url}：-----", output.squeeze('\n'), nil})
+        chan.send({"#{url}：", output.squeeze('\n'), nil})
       else
-        chan.send({"----- Result from: #{url}：-----", doc.css("body p").first.tag_text.strip, nil})
+        chan.send({"#{url}：", doc.css("body p").first.tag_text.strip, nil})
       end
     rescue ex : ArgumentError | Socket::Error
-      chan.send({"----- Error from: #{url}：-----", ex.message.not_nil!, nil})
+      chan.send({"#{url}：", ex.message.not_nil!, nil})
     end
   end
 
@@ -108,7 +112,7 @@ class Myip
               doc.css("div.ft>table>tbody>tr>td").each { |x| io << x.tag_text }
             end
 
-            detail_chan.send({"----- Checking #{ip} use ipshudi.com：-----", output.squeeze('\n')})
+            detail_chan.send({"Checking #{ip} use ipshudi.com：", output.squeeze('\n')})
           end
         end
       when timeout 5.seconds

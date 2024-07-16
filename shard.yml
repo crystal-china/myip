@@ -11,6 +11,8 @@ targets:
 dependencies:
   lexbor:
     github: kostya/lexbor
+  term-spinner:
+    github: crystal-term/spinner
 
 development_dependencies:
   ameba:

@@ -8,3 +8,11 @@ shards:
     git: https://github.com/kostya/lexbor.git
     version: 3.1.3
 
+  term-cursor:
+    git: https://github.com/crystal-term/cursor.git
+    version: 0.1.0+git.commit.8805d5f686d153db92cf2ce3333433f8ed3708d0
+
+  term-spinner:
+    git: https://github.com/crystal-term/spinner.git
+    version: 0.1.0+git.commit.60350f9598335c559a8350d98fb2b9042e53290f
+
