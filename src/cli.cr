@@ -1,6 +1,5 @@
 require "option_parser"
 require "./myip"
-require "term-spinner"
 
 OptionParser.parse do |parser|
   parser.banner = <<-USAGE
@@ -30,18 +29,11 @@ USAGE
   end
 end
 
-msg = ":spinner " + "Connecting ... ".colorize(:yellow).on_blue.bold.to_s
-spinner = Term::Spinner.new(msg, format: :dots)
-
-spinner.auto_spin
-
 myip = Myip.new
-myip.ip_from_ip138
+# myip.ip_from_ip138
 myip.ip_from_ib_sb
 myip.ip_from_ip111
 myip.process
-
-spinner.success("successful!".colorize(:yellow).on_blue.bold.to_s)
 
 at_exit do
   {% if flag?(:win32) %}

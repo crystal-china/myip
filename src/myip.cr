@@ -4,64 +4,99 @@ require "http/client"
 require "json"
 require "http/headers"
 require "colorize"
+require "term-spinner"
 
-alias Title = String
 alias IPInfo = String
 alias IP = String
 
+class String
+  def as_title
+    self.colorize(:yellow).on_blue.bold
+  end
+end
+
 class Myip
-  getter chan = Channel(Tuple(Title, IPInfo, IP?)).new
+  def new_spinner(msg : String, interval = 0.5.seconds)
+    Term::Spinner.new(":spinner " + msg, format: :dots, interval: interval)
+  end
+
+  getter chan = Channel(Tuple(IPInfo, IP?)).new
   property chan_send_count : Int32 = 0
-  property ip111_chan_send_count : Int32 = 0
+  property detail_chan_send_count : Int32 = 0
 
   def ip_from_ib_sb
     self.chan_send_count = chan_send_count() + 1
 
     spawn do
       url = "https://api.ip.sb/geoip"
-      response = HTTP::Client.get(url)
-      body = response.body
-      result = JSON.parse(body)
-      io = IO::Memory.new
-      PrettyPrint.format(result, io, width: 79)
-      io.rewind
-      chan.send({"#{url}：您访问外网地址信息：", io.gets_to_end, nil})
-    rescue JSON::ParseException
-      chan.send({"#{url}：", body.not_nil!, nil})
-    rescue ex : ArgumentError | Socket::Error
-      chan.send({"#{url}：", ex.message.not_nil!, nil})
+      spinner = new_spinner("Connecting to #{url.as_title} ...")
+
+      spinner.run do
+        response = HTTP::Client.get(url)
+        body = response.body
+        result = JSON.parse(body)
+        io = IO::Memory.new
+        PrettyPrint.format(result, io, width: 79)
+        io.rewind
+        chan.send({io.gets_to_end, nil})
+
+        spinner.success
+      rescue JSON::ParseException
+        chan.send({body.not_nil!, nil})
+      rescue ex : ArgumentError | Socket::Error
+        chan.send({ex.message.not_nil!, nil})
+      end
     end
   end
 
   def ip_from_ip111
     # 注意: ip111.cn 仅支持 http, 不支持 https:
     ip111_url = "http://www.ip111.cn"
+    spinner = new_spinner("Connecting to #{ip111_url.as_title}")
 
-    doc, code = from_url(ip111_url)
+    doc = uninitialized Lexbor::Parser
 
-    title = doc.css(".card-header").first.tag_text.strip
-    ipinfo = doc.css(".card-body p").first.tag_text.strip
+    spinner.run do
+      doc, _code = from_url(ip111_url)
 
-    STDERR.puts "#{ip111_url}：".colorize(:yellow).on_blue.bold, "#{title}：#{ipinfo}"
+      title = doc.css(".card-header").first.tag_text.strip
+      ipinfo = doc.css(".card-body p").first.tag_text.strip
+
+      STDERR.puts "#{title}：#{ipinfo}"
+
+      spinner.success
+    end
 
     headers = HTTP::Headers{"Referer" => "http://www.ip111.cn/"}
 
-    # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
+    urls = [] of Array(String)
     doc.nodes("iframe").each do |node|
+      url = node.attribute_by("src").not_nil!
+      title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
+
+      urls << [url, title]
+    end
+
+    spinner = new_spinner("Connecting to #{ip111_url.as_title}：   #{urls.map(&.[0]).join(" ").as_title} ...")
+
+    # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
+    urls.each do |(url, title)|
       self.chan_send_count = chan_send_count() + 1
-      self.ip111_chan_send_count = ip111_chan_send_count() + 1
 
       spawn do
-        url = node.attribute_by("src").not_nil!
-        doc, code = from_url(url, headers: headers)
-        title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
-        ipinfo = doc.body!.tag_text.strip
+        spinner.run do
+          doc, _code = from_url(url, headers: headers)
+          title =
+            ipinfo = doc.body!.tag_text.strip
 
-        ip = ipinfo[/[a-z0-9:.]+/]
+          ip = ipinfo[/[a-z0-9:.]+/]
 
-        chan.send({"#{ip111_url}：#{url}：", "#{title}：#{ipinfo}", ip})
-      rescue ex : ArgumentError | Socket::Error
-        chan.send({"#{ip111_url}：#{url}：", ex.message.not_nil!, nil})
+          chan.send({"#{title}：#{ipinfo}", ip})
+
+          spinner.success
+        rescue ex : ArgumentError | Socket::Error
+          chan.send({ex.message.not_nil!, nil})
+        end
       end
     end
   end
@@ -71,51 +106,90 @@ class Myip
 
     spawn do
       url = "https://www.ip138.com"
-      doc, _code = from_url(url, follow: true)
-      ip138_url = doc.css("iframe").first.attribute_by("src")
+      spinner = new_spinner("Connecting to :status ...")
+
+      spinner.update(status: url.as_title.to_s)
+      ip138_url = ""
+
+      spinner.run do
+        doc, _code = from_url(url, follow: true)
+        ip138_url = doc.css("iframe").first.attribute_by("src")
+
+        spinner.success
+      end
+
       headers = HTTP::Headers{"Origin" => "https://ip.skk.moe"}
 
-      doc, code = from_url("https:#{ip138_url}", headers: headers)
+      spinner.update(status: ip138_url.as_title.to_s)
+
+      code = 0
+      doc = uninitialized Lexbor::Parser
+
+      spinner.run do
+        doc, code = from_url("https:#{ip138_url}", headers: headers)
+
+        spinner.success
+      end
 
       if code == 502
         myip = doc.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
         url = "https://www.ip138.com/iplookup.php?ip=#{myip}"
-        doc, _code = from_url(url, headers: headers)
 
-        output = String.build do |io|
-          doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
+        spinner.update(status: url.as_title.to_s)
+
+        spinner.run do
+          doc, _code = from_url(url, headers: headers)
+
+          output = String.build do |io|
+            doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
+          end
+
+          chan.send({output.squeeze('\n'), nil})
+
+          spinner.success
         end
-
-        chan.send({"#{url}：", output.squeeze('\n'), nil})
       else
-        chan.send({"#{url}：", doc.css("body p").first.tag_text.strip, nil})
+        chan.send({doc.css("body p").first.tag_text.strip, nil})
       end
     rescue ex : ArgumentError | Socket::Error
-      chan.send({"#{url}：", ex.message.not_nil!, nil})
+      chan.send({ex.message.not_nil!, nil})
     end
   end
 
   def process
-    detail_chan = Channel(Tuple(String, String)).new
+    detail_chan = Channel(String).new
+    details_ip_urls = [] of String
+    spinner = new_spinner("Connecting to :status： ...")
 
     chan_send_count.times do
       select
       when value = chan.receive
-        title, ipinfo, ip = value
+        ipinfo, ip = value
 
-        STDERR.puts "#{title.colorize(:yellow).on_blue.bold}\n#{ipinfo}"
+        STDERR.puts ipinfo
 
         if !ip.nil?
+          self.detail_chan_send_count = detail_chan_send_count() + 1
+
           spawn do
             details_ip_url = "https://www.ipshudi.com/#{ip}.htm"
+            details_ip_urls << details_ip_url.as_title.to_s
 
-            doc, _code = from_url(details_ip_url)
+            spinner.update(status: "#{details_ip_urls.join(" ")}")
 
-            output = String.build do |io|
-              doc.css("div.ft>table>tbody>tr>td").each { |x| io << x.tag_text }
+            spinner.run do
+              doc, _code = from_url(details_ip_url)
+
+              output = String.build do |io|
+                doc.css("div.ft>table>tbody>tr>td").each do |x|
+                  io << x.tag_text
+                end
+              end
+
+              detail_chan.send(output.squeeze('\n'))
+
+              spinner.success
             end
-
-            detail_chan.send({"Checking #{ip} use ipshudi.com：", output.squeeze('\n')})
           end
         end
       when timeout 5.seconds
@@ -124,12 +198,10 @@ class Myip
       end
     end
 
-    ip111_chan_send_count.times do
+    detail_chan_send_count.times do
       select
-      when value = detail_chan.receive
-        title, ipinfo = value
-
-        STDERR.puts "#{title.colorize(:yellow).on_blue.bold}\n#{ipinfo}"
+      when ipinfo = detail_chan.receive
+        STDERR.puts ipinfo
       end
     end
   end
