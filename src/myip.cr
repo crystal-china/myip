@@ -6,9 +6,6 @@ require "http/headers"
 require "colorize"
 require "term-spinner"
 
-alias IPInfo = String
-alias IP = String
-
 class String
   def as_title
     self.colorize(:yellow).on_blue.bold
@@ -16,20 +13,16 @@ class String
 end
 
 class Myip
-  def new_spinner(msg : String, interval = 0.5.seconds)
-    Term::Spinner.new(":spinner " + msg, format: :dots, interval: interval)
-  end
-
-  getter chan = Channel(Tuple(IPInfo, IP?)).new
+  getter chan = Channel(Tuple(String, String?)).new
   property chan_send_count : Int32 = 0
   property detail_chan_send_count : Int32 = 0
 
-  def ip_from_ib_sb
+  def ip_from_ip_sb
     self.chan_send_count = chan_send_count() + 1
 
     spawn do
       url = "https://api.ip.sb/geoip"
-      spinner = new_spinner("Connecting to #{url.as_title} ...")
+      spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
 
       spinner.run do
         response = HTTP::Client.get(url)
@@ -50,13 +43,15 @@ class Myip
   end
 
   def ip_from_ip111
+    spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
+
     # 注意: ip111.cn 仅支持 http, 不支持 https:
     ip111_url = "http://www.ip111.cn"
-    spinner = new_spinner("Connecting to #{ip111_url.as_title}")
+    sp1 = spinner.register ":spinner Connecting to #{ip111_url.as_title} ..."
 
     doc = uninitialized Lexbor::Parser
 
-    spinner.run do
+    sp1.run do
       doc, _code = from_url(ip111_url)
 
       title = doc.css(".card-header").first.tag_text.strip
@@ -64,36 +59,29 @@ class Myip
 
       STDERR.puts "#{title}：#{ipinfo}"
 
-      spinner.success
+      sp1.success
     end
 
     headers = HTTP::Headers{"Referer" => "http://www.ip111.cn/"}
 
-    urls = [] of Array(String)
+    # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
     doc.nodes("iframe").each do |node|
+      self.chan_send_count = chan_send_count() + 1
       url = node.attribute_by("src").not_nil!
       title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
 
-      urls << [url, title]
-    end
-
-    spinner = new_spinner("Connecting to #{ip111_url.as_title}：   #{urls.map(&.[0]).join(" ").as_title} ...")
-
-    # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
-    urls.each do |(url, title)|
-      self.chan_send_count = chan_send_count() + 1
+      sp = spinner.register("Connecting to #{url.as_title} ...")
 
       spawn do
-        spinner.run do
+        sp.run do
           doc, _code = from_url(url, headers: headers)
-          title =
-            ipinfo = doc.body!.tag_text.strip
+          ipinfo = doc.body!.tag_text.strip
 
           ip = ipinfo[/[a-z0-9:.]+/]
 
           chan.send({"#{title}：#{ipinfo}", ip})
 
-          spinner.success
+          sp.success
         rescue ex : ArgumentError | Socket::Error
           chan.send({ex.message.not_nil!, nil})
         end
@@ -102,42 +90,42 @@ class Myip
   end
 
   def ip_from_ip138
+    spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
     self.chan_send_count = chan_send_count + 1
 
     spawn do
       url = "https://www.ip138.com"
-      spinner = new_spinner("Connecting to :status ...")
+      sp = spinner.register("Connecting to #{url.as_title} ...")
 
-      spinner.update(status: url.as_title.to_s)
       ip138_url = ""
 
-      spinner.run do
+      sp.run do
         doc, _code = from_url(url, follow: true)
-        ip138_url = doc.css("iframe").first.attribute_by("src")
+        ip138_url = doc.css("iframe").first.attribute_by("src").not_nil!
 
-        spinner.success
+        sp.success
       end
 
       headers = HTTP::Headers{"Origin" => "https://ip.skk.moe"}
 
-      spinner.update(status: ip138_url.as_title.to_s)
+      sp1 = spinner.register("Connecting to #{ip138_url.as_title} ...")
 
       code = 0
       doc = uninitialized Lexbor::Parser
 
-      spinner.run do
+      sp1.run do
         doc, code = from_url("https:#{ip138_url}", headers: headers)
 
-        spinner.success
+        sp1.success
       end
 
       if code == 502
         myip = doc.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
         url = "https://www.ip138.com/iplookup.php?ip=#{myip}"
 
-        spinner.update(status: url.as_title.to_s)
+        sp2 = spinner.register("Connecting to #{url.as_title} ...")
 
-        spinner.run do
+        sp2.run do
           doc, _code = from_url(url, headers: headers)
 
           output = String.build do |io|
@@ -146,7 +134,7 @@ class Myip
 
           chan.send({output.squeeze('\n'), nil})
 
-          spinner.success
+          sp2.success
         end
       else
         chan.send({doc.css("body p").first.tag_text.strip, nil})
@@ -157,27 +145,23 @@ class Myip
   end
 
   def process
+    spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
     detail_chan = Channel(String).new
-    details_ip_urls = [] of String
-    spinner = new_spinner("Connecting to :status： ...")
 
     chan_send_count.times do
       select
       when value = chan.receive
         ipinfo, ip = value
 
-        STDERR.puts ipinfo
+        STDERR.puts "\n#{ipinfo}"
 
         if !ip.nil?
           self.detail_chan_send_count = detail_chan_send_count() + 1
+          details_ip_url = "https://www.ipshudi.com/#{ip}.htm"
+          sp = spinner.register("Connecting to #{details_ip_url.as_title} ...")
 
           spawn do
-            details_ip_url = "https://www.ipshudi.com/#{ip}.htm"
-            details_ip_urls << details_ip_url.as_title.to_s
-
-            spinner.update(status: "#{details_ip_urls.join(" ")}")
-
-            spinner.run do
+            sp.run do
               doc, _code = from_url(details_ip_url)
 
               output = String.build do |io|
@@ -188,7 +172,7 @@ class Myip
 
               detail_chan.send(output.squeeze('\n'))
 
-              spinner.success
+              sp.success
             end
           end
         end
