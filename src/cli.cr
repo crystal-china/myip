@@ -7,8 +7,7 @@ ip111 = false
 ip138 = false
 ipsb = false
 
-OptionParser.parse do |parser|
-  parser.banner = <<-USAGE
+usage = <<-USAGE
 Usage:
 myip ip111 => get ip from http://www.ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
@@ -16,6 +15,8 @@ myip ipsb => get ip info from https://api.ip.sb/geoip
 
 USAGE
 
+OptionParser.parse do |parser|
+  parser.banner = usage
   parser.on("-h", "--help", "Show this help message and exit") do
     puts parser
     exit
@@ -45,6 +46,8 @@ USAGE
       ip138 = true
     elsif args.includes? "ipsb"
       ipsb = true
+    else
+      STDERR.puts usage
     end
   end
 end
