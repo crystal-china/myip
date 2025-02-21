@@ -41,7 +41,7 @@ jobs:
           llvm-static \
           make
       - name: Download source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install shards
         run: shards check || shards install --without-development
       - name: Check formatting
