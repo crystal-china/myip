@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Cache shards
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/shards
           key: ${{ runner.os }}-shards-${{ hashFiles('shard.yml') }}
@@ -20,7 +20,7 @@ jobs:
         with:
           cmake-version: "3.16.x"
       - name: Download source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
       - name: Install shards
