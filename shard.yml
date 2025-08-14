@@ -1,5 +1,5 @@
 name: myip
-version: 0.5.1
+version: 0.5.2
 
 authors:
   - Billy.Zheng <vil963@gmail.com>
@@ -13,6 +13,7 @@ dependencies:
     github: kostya/lexbor
   term-spinner:
     github: crystal-term/spinner
+    commit: "60350f9598335c559a8350d98fb2b9042e53290f"
 
 development_dependencies:
   ameba:
