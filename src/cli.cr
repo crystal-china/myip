@@ -3,15 +3,20 @@ require "./myip"
 
 ARGV << "--help" if ARGV.empty?
 
-ip111 = false
-ip138 = false
-ipsb = false
+# ip111 = false
+# ip138 = false
+# ipsb = false
+# ipw = false
+
+myip = Myip.new
 
 usage = <<-USAGE
 Usage:
 myip ip111 => get ip from http://www.ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
 myip ipsb => get ip info from https://api.ip.sb/geoip
+myip ipw => get ip info from http://4.ipw.cn
+myip ipw6 => get ipv6 info from http://6.ipw.cn
 
 USAGE
 
@@ -41,21 +46,21 @@ OptionParser.parse do |parser|
 
   parser.unknown_args do |args|
     if args.includes? "ip111"
-      ip111 = true
+      myip.ip_from_ip111
     elsif args.includes? "ip138"
-      ip138 = true
+      myip.ip_from_ip138
     elsif args.includes? "ipsb"
-      ipsb = true
+      myip.ip_from_ip_sb
+    elsif args.includes? "ipw6"
+      myip.ip_from_ipw(ip_version: 6)
+    elsif args.includes? "ipw"
+      myip.ip_from_ipw(ip_version: 4)
     else
       STDERR.puts usage
     end
   end
 end
 
-myip = Myip.new
-myip.ip_from_ip138 if ip138
-myip.ip_from_ip_sb if ipsb
-myip.ip_from_ip111 if ip111
 myip.process
 
 at_exit do
