@@ -15,6 +15,7 @@ Usage:
 myip ip111 => get ip from http://www.ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
 myip ipsb => get ip info from https://api.ip.sb/geoip
+myip ifconfig => get ip info from https://ifconfig.io
 myip ipw => get ip info from http://4.ipw.cn
 myip ipw6 => get ipv6 info from http://6.ipw.cn
 
@@ -51,6 +52,8 @@ OptionParser.parse do |parser|
       myip.ip_from_ip138
     elsif args.includes? "ipsb"
       myip.ip_from_ip_sb
+    elsif args.includes? "ifconfig"
+      myip.ip_from_ifconfig
     elsif args.includes? "ipw6"
       myip.ip_from_ipw(ip_version: 6)
     elsif args.includes? "ipw"

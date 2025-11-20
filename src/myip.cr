@@ -17,6 +17,33 @@ class Myip
   property chan_send_count : Int32 = 0
   property detail_chan_send_count : Int32 = 0
 
+  def ip_from_ifconfig(ip_version : Int32 = 4)
+    self.chan_send_count = chan_send_count() + 1
+
+    spawn do
+      url = "https://ifconfig.io"
+      spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
+
+      spinner.run do
+        headers = HTTP::Headers{
+          "User-Agent" => "curl/7.88.1",
+          "Accept"     => "*/*",
+          # Host 是必须的，Google Gemini 3 帮我找到的问题，
+          # 只有加了这个，才能返回正确的 IP
+          "Host" => "ifconfig.io",
+        }
+
+        response = HTTP::Client.get(url, headers: headers)
+        body = response.body
+        chan.send({body, nil})
+
+        spinner.success
+      rescue ex : ArgumentError | Socket::Error
+        chan.send({ex.message.not_nil!, nil})
+      end
+    end
+  end
+
   def ip_from_ipw(ip_version : Int32 = 4)
     self.chan_send_count = chan_send_count() + 1
 
