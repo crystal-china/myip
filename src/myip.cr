@@ -108,12 +108,12 @@ class Myip
       url = node.attribute_by("src").not_nil!
 
       spawn do
-        doc, _code = from_url(
-          url,
-          headers: HTTP::Headers{
-            "Referer" => "http://www.ip111.cn/",
-            "Host"    => URI.parse(url).host.not_nil!,
-          })
+        headers = HTTP::Headers{
+          "Referer" => "http://www.ip111.cn/",
+          "Host"    => URI.parse(url).host.not_nil!,
+        }
+
+        doc, _code = from_url(url, headers: headers)
         ipinfo = doc.body!.tag_text.strip
         # ip = ipinfo[/[a-z0-9:.]+/]
 
@@ -145,39 +145,55 @@ class Myip
         sp.success
       end
 
-      headers = HTTP::Headers{"Origin" => "https://ip.skk.moe"}
+      ip138_url = "https:#{ip138_url}"
+
+      headers = HTTP::Headers{
+        "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Host"           => URI.parse(ip138_url).host.not_nil!,
+        "Referer"        => url,
+        "Sec-Fetch-Dest" => "iframe",
+        "Sec-Fetch-Mode" => "navigate",
+        "Sec-Fetch-Site" => "same-site",
+        "User-Agent"     => "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+      }
 
       sp1 = spinner.register("Connecting to #{ip138_url.as_title} ...")
 
       code = 0
-      doc = uninitialized Lexbor::Parser
+      doc1 = uninitialized Lexbor::Parser
 
       sp1.run do
-        doc, code = from_url("https:#{ip138_url}", headers: headers)
+        doc1, code = from_url(ip138_url, headers: headers)
 
         sp1.success
       end
 
-      if code == 502
-        myip = doc.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
-        url = "https://www.ip138.com/iplookup.php?ip=#{myip}"
+      body = doc1.body.not_nil!.tag_text.strip
 
-        sp2 = spinner.register("Connecting to #{url.as_title} ...")
+      chan.send({"ip138.com", body.lines[0].strip})
 
-        sp2.run do
-          doc, _code = from_url(url, headers: headers)
+      # if code == 502
+      #   myip = doc1.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
+      #   url = "https://www.ip138.com/iplookup.php?ip=#{myip}"
 
-          output = String.build do |io|
-            doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
-          end
+      #   sp2 = spinner.register("Connecting to #{url.as_title} ...")
 
-          chan.send({output.squeeze('\n'), nil})
+      #   sp2.run do
+      #     doc, _code = from_url(url, headers: headers)
 
-          sp2.success
-        end
-      else
-        chan.send({doc.css("body p").first.tag_text.strip, nil})
-      end
+      #     output = String.build do |io|
+      #       doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
+      #     end
+
+      #     chan.send({output.squeeze('\n'), nil})
+
+      #     sp2.success
+      #   end
+      # else
+
+      # end
+
+
     rescue ex : ArgumentError | Socket::Error
       chan.send({ex.message.not_nil!, nil})
     end
