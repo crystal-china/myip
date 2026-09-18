@@ -16,8 +16,6 @@ myip ip111 => get ip info from https://ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
 myip ipsb => get ip info from https://api.ip.sb/geoip
 myip ifconfig => get ip info from https://ifconfig.io
-myip ipw => get ip info from http://4.ipw.cn
-myip ipw6 => get ipv6 info from http://6.ipw.cn
 myip ipify => get IPv4 from https://api.ipify.org
 myip ipify6 => get IPv6 from https://api6.ipify.org
 myip cf => get connection info from Cloudflare trace
@@ -72,10 +70,6 @@ OptionParser.parse do |parser|
       myip.ip_from_aws
     elsif args.includes? "akamai"
       myip.ip_from_akamai
-    elsif args.includes? "ipw6"
-      myip.ip_from_ipw(ip_version: 6)
-    elsif args.includes? "ipw"
-      myip.ip_from_ipw(ip_version: 4)
     else
       STDERR.puts usage
     end

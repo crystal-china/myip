@@ -43,24 +43,6 @@ class Myip
     end
   end
 
-  def ip_from_ipw(ip_version : Int32 = 4)
-    self.chan_send_count = chan_send_count() + 1
-    spawn do
-      url = "http://#{ip_version}.ipw.cn"
-      spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
-
-      spinner.run do
-        response = HTTP::Client.get(url)
-        body = response.body
-        chan.send({body, nil})
-
-        spinner.success
-      rescue ex : ArgumentError | Socket::Error | IO::EOFError
-        chan.send({ex.message.not_nil!, nil})
-      end
-    end
-  end
-
   def ip_from_ipify(ip_version : Int32 = 4)
     url = case ip_version
           when 4
