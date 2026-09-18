@@ -52,8 +52,9 @@ class Myip
           raise ArgumentError.new "Host #{url} returned #{response.status_code}"
         end
 
-        chan.send({"Dyn CheckIP", parse_dyndns_body(response.body)})
+        result = parse_dyndns_body(response.body)
         spinner.success
+        chan.send({"Dyn CheckIP", result})
       rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | Lexbor::Error
         error_chan.send("Dyn CheckIP failed: #{ex.message}")
       end
@@ -271,8 +272,9 @@ class Myip
           raise ArgumentError.new "Host #{url} returned #{response.status_code}"
         end
 
-        chan.send({name, format_raw_body(response.body)})
+        result = format_raw_body(response.body)
         spinner.success
+        chan.send({name, result})
       rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
         error_chan.send("#{name} failed: #{ex.message}")
       end
@@ -332,7 +334,7 @@ class Myip
       raise ArgumentError.new "Host #{url} returned #{response.status_code}"
     end
   rescue e : Socket::Error
-    e.inspect_with_backtrace(STDERR)
-    raise Socket::Error.new "Visit #{url} failed, please check your internet connection."
+    # e.inspect_with_backtrace(STDERR)
+    raise Socket::Error.new "Visit #{url} failed: #{e.message}"
   end
 end
