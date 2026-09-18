@@ -167,6 +167,11 @@ class Myip
         error_chan.send("ip111 failed: #{ex.message}")
       end
     end
+  rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
+    # Socket::Error has already been logged by #from_url.
+    Log.debug(exception: ex) { "ip111 failed" } unless ex.is_a?(Socket::Error)
+    STDERR.puts "ip111 failed: #{ex.message}"
+    exit 1
   end
 
   def ip_from_ip138
