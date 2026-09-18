@@ -87,14 +87,13 @@ class Myip
 
   def ip_from_ip111
     spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
-    ip111_url = "https://www.ip111.cn"
+    ip111_url = "https://ip111.cn"
 
     doc = uninitialized Lexbor::Parser
 
     doc, _code = from_url(ip111_url, follow: true, headers: HTTP::Headers{
       "User-Agent" => "curl/7.88.1",
       "Accept"     => "*/*",
-      "Host"       => URI.parse(ip111_url).host.not_nil!,
     })
 
     title = doc.css(".card-header").first.tag_text.strip
@@ -109,8 +108,7 @@ class Myip
 
       spawn do
         headers = HTTP::Headers{
-          "Referer" => "http://www.ip111.cn/",
-          "Host"    => URI.parse(url).host.not_nil!,
+          "Referer" => "https://ip111.cn/",
         }
 
         doc, _code = from_url(url, headers: headers)
