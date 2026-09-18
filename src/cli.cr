@@ -50,35 +50,36 @@ OptionParser.parse do |parser|
   end
 
   parser.unknown_args do |args|
-    if args.includes? "ip111"
+    case args.first?
+    when "ip111"
       myip.ip_from_ip111
-    elsif args.includes? "ip138"
+    when "ip138"
       myip.ip_from_ip138
-    elsif args.includes? "ipsb"
+    when "ipsb"
       myip.ip_from_ip_sb
-    elsif args.includes? "ifconfig.io"
+    when "ifconfig.io"
       myip.ip_from_ifconfig_io
-    elsif args.includes? "ifconfig.co"
+    when "ifconfig.co"
       myip.ip_from_ifconfig_co
-    elsif args.includes? "ifconfig.me"
+    when "ifconfig.me"
       myip.ip_from_ifconfig_me
-    elsif args.includes? "icanhazip"
+    when "icanhazip"
       myip.ip_from_icanhazip
-    elsif args.includes? "httpbin"
+    when "httpbin"
       myip.ip_from_httpbin
-    elsif args.includes? "dyndns"
+    when "dyndns"
       myip.ip_from_dyndns
-    elsif args.includes? "ipify6"
+    when "ipify6"
       myip.ip_from_ipify(ip_version: 6)
-    elsif args.includes? "ipify"
+    when "ipify"
       myip.ip_from_ipify(ip_version: 4)
-    elsif args.includes? "cf"
+    when "cf"
       myip.ip_from_cf
-    elsif args.includes? "ident"
+    when "ident"
       myip.ip_from_ident
-    elsif args.includes? "aws"
+    when "aws"
       myip.ip_from_aws
-    elsif args.includes? "akamai"
+    when "akamai"
       myip.ip_from_akamai
     else
       STDERR.puts usage
