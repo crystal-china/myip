@@ -91,20 +91,7 @@ class Myip
   end
 
   def ip_from_ip_sb
-    self.chan_send_count = chan_send_count() + 1
-    spawn do
-      url = "https://api.ip.sb/geoip"
-      spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
-
-      spinner.run do
-        response = http_get(url)
-        chan.send({format_raw_body(response.body), nil})
-
-        spinner.success
-      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
-        error_chan.send(ex.message.to_s)
-      end
-    end
+    ip_from_raw("ip.sb", "https://api.ip.sb/geoip")
   end
 
   def ip_from_ip111
