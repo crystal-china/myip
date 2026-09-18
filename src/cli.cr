@@ -15,7 +15,7 @@ Usage:
 myip ip111 => get ip info from https://ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
 myip ipsb => get ip info from https://api.ip.sb/geoip
-myip ifconfig => get ip info from https://ifconfig.io
+myip ifconfig => get IP from https://ifconfig.io/ip
 myip ipify => get IPv4 from https://api.ipify.org
 myip ipify6 => get IPv6 from https://api6.ipify.org
 myip cf => get connection info from Cloudflare trace

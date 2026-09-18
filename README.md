@@ -9,7 +9,7 @@
 - `myip aws`：通过 AWS CheckIP 获取 IP 地址
 - `myip akamai`：通过 Akamai 获取 IP 地址
 - `myip ipsb`：通过 `https://api.ip.sb/geoip` 获取详细 IP 信息
-- `myip ifconfig`：通过 `https://ifconfig.io` 获取 IP 地址
+- `myip ifconfig`：通过 `https://ifconfig.io/ip` 获取 IP 地址
 - `myip ip111`：通过 `https://ip111.cn` 获取国内、国外及 Google 路径的 IP 信息
 - `myip ip138`：通过 `https://www.ip138.com` 获取国内 IP 信息
 
