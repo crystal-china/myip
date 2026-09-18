@@ -51,14 +51,31 @@ describe Myip do
     spawn { server.listen }
 
     begin
-      doc, status = TestableMyip.new.fetch_url(
+      doc = TestableMyip.new.fetch_url(
         "http://#{expected_host}/redirect",
         follow: true,
         headers: HTTP::Headers{"Host" => "stale.example"}
       )
 
-      status.should eq(200)
       doc.body!.tag_text.should contain("redirected")
+    ensure
+      server.close
+    end
+  end
+
+  it "rejects a 502 response" do
+    server = HTTP::Server.new do |context|
+      context.response.status = HTTP::Status::BAD_GATEWAY
+      context.response.print("<html><body>bad gateway</body></html>")
+    end
+    address = server.bind_tcp("127.0.0.1", 0)
+    spawn { server.listen }
+
+    begin
+      url = "http://127.0.0.1:#{address.port}"
+      expect_raises(ArgumentError, "Host #{url} returned 502") do
+        TestableMyip.new.fetch_url(url)
+      end
     ensure
       server.close
     end

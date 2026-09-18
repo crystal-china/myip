@@ -101,7 +101,7 @@ class Myip
 
     homepage_doc = nil.as(Lexbor::Parser?)
     homepage_spinner.run do
-      doc, _code = from_url(ip111_url, follow: true, headers: HTTP::Headers{
+      doc = from_url(ip111_url, follow: true, headers: HTTP::Headers{
         "User-Agent" => "curl/7.88.1",
         "Accept"     => "*/*",
       })
@@ -138,7 +138,7 @@ class Myip
         }
 
         iframe_spinner.run do
-          doc, _code = from_url(url, headers: headers)
+          doc = from_url(url, headers: headers)
           body_node = doc.body || raise ArgumentError.new "ip111 iframe: body not found"
 
           ipinfo = body_node.tag_text.strip
@@ -177,7 +177,7 @@ class Myip
       # 首页 iframe 的 src，当前通常是 //数字.ip138.com/ 形式。
       iframe_src = nil.as(String?)
       sp.run do
-        doc, _code = from_url(url, follow: true)
+        doc = from_url(url, follow: true)
         iframe = doc.css("iframe").first? || raise ArgumentError.new "ip138: iframe not found"
 
         src = iframe.attribute_by("src") || raise ArgumentError.new "ip138: iframe src not found"
@@ -216,7 +216,7 @@ class Myip
 
       iframe_doc = nil.as(Lexbor::Parser?)
       sp1.run do
-        doc, _code = from_url(ip138_url, headers: headers)
+        doc = from_url(ip138_url, headers: headers)
         iframe_doc = doc
 
         sp1.success
@@ -310,10 +310,10 @@ class Myip
     end
   end
 
-  private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new, redirects_left : Int32 = 5) : Tuple(Lexbor::Parser, Int32)
+  private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new, redirects_left : Int32 = 5) : Lexbor::Parser
     response = http_get(url, headers)
     if response.status_code == 200
-      {Lexbor::Parser.new(response.body), 200}
+      Lexbor::Parser.new(response.body)
     elsif follow && response.status_code.in?(301, 302, 303, 307, 308)
       raise ArgumentError.new "Too many redirects while visiting #{url}" if redirects_left <= 0
 
@@ -328,8 +328,6 @@ class Myip
         follow: true,
         headers: redirect_headers,
         redirects_left: redirects_left - 1
-    elsif response.status_code == 502
-      {Lexbor::Parser.new(response.body), 502}
     else
       raise ArgumentError.new "Host #{url} returned #{response.status_code}"
     end
