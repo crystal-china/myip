@@ -56,7 +56,13 @@ OptionParser.parse do |parser|
   end
 
   parser.unknown_args do |args|
-    case args.first?
+    unless args.size == 1
+      STDERR.puts "Expected exactly one command, got #{args.size}.\n\n"
+      STDERR.puts parser
+      exit 1
+    end
+
+    case args.first
     when "ip111"
       myip.ip_from_ip111
     when "ip138"
