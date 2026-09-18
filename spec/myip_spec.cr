@@ -9,6 +9,10 @@ class TestableMyip < Myip
   def format_body(body : String)
     format_raw_body(body)
   end
+
+  def parse_dyndns(body : String)
+    parse_dyndns_body(body)
+  end
 end
 
 describe Myip do
@@ -67,5 +71,10 @@ describe Myip do
 
   it "keeps non-JSON responses as plain text" do
     TestableMyip.new.format_body("  1.2.3.4\n").should eq("1.2.3.4")
+  end
+
+  it "extracts the IP address from a Dyn CheckIP HTML response" do
+    body = "<html><head><title>Current IP Check</title></head><body>Current IP Address: 1.2.3.4</body></html>"
+    TestableMyip.new.parse_dyndns(body).should eq("1.2.3.4")
   end
 end

@@ -15,6 +15,7 @@ myip ifconfig.co => get IP and geolocation info from https://ifconfig.co/json
 myip ifconfig.me => get connection info from https://ifconfig.me/all.json
 myip icanhazip => get IP from https://icanhazip.com
 myip httpbin => get origin IP from https://httpbin.org/ip
+myip dyndns => get IP from http://checkip.dyndns.org
 myip ipify => get IPv4 from https://api.ipify.org
 myip ipify6 => get IPv6 from https://api6.ipify.org
 myip cf => get connection info from Cloudflare trace
@@ -65,6 +66,8 @@ OptionParser.parse do |parser|
       myip.ip_from_icanhazip
     elsif args.includes? "httpbin"
       myip.ip_from_httpbin
+    elsif args.includes? "dyndns"
+      myip.ip_from_dyndns
     elsif args.includes? "ipify6"
       myip.ip_from_ipify(ip_version: 6)
     elsif args.includes? "ipify"

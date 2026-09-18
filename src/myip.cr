@@ -37,6 +37,26 @@ class Myip
     ip_from_raw("httpbin.org", "https://httpbin.org/ip")
   end
 
+  def ip_from_dyndns
+    self.chan_send_count = chan_send_count() + 1
+    spawn do
+      url = "http://checkip.dyndns.org"
+      spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
+
+      spinner.run do
+        response = HTTP::Client.get(url)
+        unless response.success?
+          raise ArgumentError.new "Host #{url} returned #{response.status_code}"
+        end
+
+        chan.send({"Dyn CheckIP", parse_dyndns_body(response.body)})
+        spinner.success
+      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
+        chan.send({"Dyn CheckIP failed", ex.message.not_nil!})
+      end
+    end
+  end
+
   def ip_from_ipify(ip_version : Int32 = 4)
     url = case ip_version
           when 4
@@ -278,6 +298,14 @@ class Myip
     rescue JSON::ParseException
       stripped_body
     end
+  end
+
+  private def parse_dyndns_body(body : String) : String
+    text = Lexbor::Parser.new(body).body.not_nil!.tag_text.strip
+    match = text.match(/Current IP Address:\s*([0-9a-fA-F:.]+)/)
+    raise ArgumentError.new "Unable to parse Dyn CheckIP response" unless match
+
+    match[1]
   end
 
   private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new, redirects_left : Int32 = 5) : Tuple(Lexbor::Parser, Int32)
