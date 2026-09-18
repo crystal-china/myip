@@ -58,9 +58,10 @@ class Myip
         result = parse_dyndns_body(response.body)
         spinner.success
         chan.send({"Dyn CheckIP", result})
-      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | Lexbor::Error
-        error_chan.send("Dyn CheckIP failed: #{ex.message}")
       end
+    rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | Lexbor::Error
+      Log.debug(exception: ex) { "Dyn CheckIP failed" }
+      error_chan.send("Dyn CheckIP failed: #{ex.message}")
     end
   end
 
@@ -164,6 +165,8 @@ class Myip
           chan.send({title, ipinfo})
         end
       rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
+        # Socket::Error has already been logged by #from_url.
+        Log.debug(exception: ex) { "ip111 failed" } unless ex.is_a?(Socket::Error)
         error_chan.send("ip111 failed: #{ex.message}")
       end
     end
@@ -239,6 +242,8 @@ class Myip
 
       chan.send({"ip138.com", first_line.strip})
     rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
+      # Socket::Error has already been logged by #from_url.
+      Log.debug(exception: ex) { "ip138 failed" } unless ex.is_a?(Socket::Error)
       error_chan.send("ip138 failed: #{ex.message}")
     end
   end
@@ -280,9 +285,10 @@ class Myip
         result = format_raw_body(response.body)
         spinner.success
         chan.send({name, result})
-      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
-        error_chan.send("#{name} failed: #{ex.message}")
       end
+    rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
+      Log.debug(exception: ex) { "#{name} failed" }
+      error_chan.send("#{name} failed: #{ex.message}")
     end
   end
 
