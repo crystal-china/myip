@@ -7,9 +7,21 @@ Log.setup_from_env(
   backend: Log::IOBackend.new(STDERR)
 )
 
+COMMAND_TIMEOUT = 30.seconds
+
 ARGV << "--help" if ARGV.empty?
 
 myip = Myip.new
+command_done = Channel(Nil).new
+
+spawn do
+  select
+  when command_done.receive
+  when timeout COMMAND_TIMEOUT
+    STDERR.puts "Timeout, check your network connection!"
+    exit 1
+  end
+end
 
 usage = <<-USAGE
 Usage:
@@ -101,6 +113,7 @@ OptionParser.parse do |parser|
 end
 
 myip.process
+command_done.send(nil)
 
 at_exit do
   {% if flag?(:win32) %}

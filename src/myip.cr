@@ -255,9 +255,6 @@ class Myip
       when message = error_chan.receive
         errors << message
         failed = true
-      when timeout 30.seconds
-        STDERR.puts "Timeout, check your network connection!"
-        exit 1
       end
     end
 
