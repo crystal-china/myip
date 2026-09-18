@@ -15,7 +15,6 @@ end
 class Myip
   CONNECT_TIMEOUT = 5.seconds
   READ_TIMEOUT    = 8.seconds
-  PROCESS_TIMEOUT = 30.seconds
 
   getter chan = Channel(Tuple(String, String?)).new
   getter error_chan = Channel(String).new
@@ -56,7 +55,7 @@ class Myip
 
         chan.send({"Dyn CheckIP", parse_dyndns_body(response.body)})
         spinner.success
-      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
+      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
         error_chan.send("Dyn CheckIP failed: #{ex.message}")
       end
     end
@@ -102,7 +101,7 @@ class Myip
         chan.send({format_raw_body(response.body), nil})
 
         spinner.success
-      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
+      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
         error_chan.send(ex.message.to_s)
       end
     end
@@ -144,7 +143,7 @@ class Myip
         # 可能会出现，spawn 内部看到的外部的 url 是两个相同的 url.
         title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
         chan.send({"#{title}：", ipinfo})
-      rescue ex : ArgumentError | Socket::Error | OpenSSL::SSL::Error
+      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
         error_chan.send(ex.message.to_s)
       end
     end
@@ -215,7 +214,7 @@ class Myip
       # end
 
 
-    rescue ex : ArgumentError | Socket::Error
+    rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
       error_chan.send(ex.message.to_s)
     end
   end
@@ -233,7 +232,7 @@ class Myip
       when message = error_chan.receive
         STDERR.puts message
         failed = true
-      when timeout PROCESS_TIMEOUT
+      when timeout 30.seconds
         STDERR.puts "Timeout, check your network connection!"
         exit 1
       end
@@ -296,7 +295,7 @@ class Myip
 
         chan.send({name, format_raw_body(response.body)})
         spinner.success
-      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
+      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
         error_chan.send("#{name} failed: #{ex.message}")
       end
     end
