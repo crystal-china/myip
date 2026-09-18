@@ -13,6 +13,10 @@ class TestableMyip < Myip
   def parse_dyndns(body : String)
     parse_dyndns_body(body)
   end
+
+  def fetch_http(url : String, *, connect_timeout : Time::Span, read_timeout : Time::Span)
+    http_get(url, connect_timeout: connect_timeout, read_timeout: read_timeout)
+  end
 end
 
 describe Myip do
@@ -76,5 +80,26 @@ describe Myip do
   it "extracts the IP address from a Dyn CheckIP HTML response" do
     body = "<html><head><title>Current IP Check</title></head><body>Current IP Address: 1.2.3.4</body></html>"
     TestableMyip.new.parse_dyndns(body).should eq("1.2.3.4")
+  end
+
+  it "times out while waiting for an HTTP response" do
+    server = HTTP::Server.new do |context|
+      sleep 100.milliseconds
+      context.response.print("late response")
+    end
+    address = server.bind_tcp("127.0.0.1", 0)
+    spawn { server.listen }
+
+    begin
+      expect_raises(IO::TimeoutError) do
+        TestableMyip.new.fetch_http(
+          "http://127.0.0.1:#{address.port}",
+          connect_timeout: 1.second,
+          read_timeout: 10.milliseconds
+        )
+      end
+    ensure
+      server.close
+    end
   end
 end

@@ -13,6 +13,10 @@ class String
 end
 
 class Myip
+  CONNECT_TIMEOUT = 5.seconds
+  READ_TIMEOUT    = 8.seconds
+  PROCESS_TIMEOUT = 30.seconds
+
   getter chan = Channel(Tuple(String, String?)).new
   getter error_chan = Channel(String).new
   property chan_send_count : Int32 = 0
@@ -45,7 +49,7 @@ class Myip
       spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
 
       spinner.run do
-        response = HTTP::Client.get(url)
+        response = http_get(url)
         unless response.success?
           raise ArgumentError.new "Host #{url} returned #{response.status_code}"
         end
@@ -94,7 +98,7 @@ class Myip
       spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
 
       spinner.run do
-        response = HTTP::Client.get(url)
+        response = http_get(url)
         chan.send({format_raw_body(response.body), nil})
 
         spinner.success
@@ -229,7 +233,7 @@ class Myip
       when message = error_chan.receive
         STDERR.puts message
         failed = true
-      when timeout 10.seconds
+      when timeout PROCESS_TIMEOUT
         STDERR.puts "Timeout, check your network connection!"
         exit 1
       end
@@ -285,7 +289,7 @@ class Myip
       spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
 
       spinner.run do
-        response = HTTP::Client.get(url)
+        response = http_get(url)
         unless response.success?
           raise ArgumentError.new "Host #{url} returned #{response.status_code}"
         end
@@ -315,8 +319,17 @@ class Myip
     match[1]
   end
 
+  private def http_get(url : String, headers = HTTP::Headers.new, *, connect_timeout = CONNECT_TIMEOUT, read_timeout = READ_TIMEOUT) : HTTP::Client::Response
+    uri = URI.parse(url)
+    HTTP::Client.new(uri) do |client|
+      client.connect_timeout = connect_timeout
+      client.read_timeout = read_timeout
+      client.get(uri.request_target, headers: headers)
+    end
+  end
+
   private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new, redirects_left : Int32 = 5) : Tuple(Lexbor::Parser, Int32)
-    response = HTTP::Client.get url, headers: headers
+    response = http_get(url, headers)
     if response.status_code == 200
       {Lexbor::Parser.new(response.body), 200}
     elsif follow && response.status_code.in?(301, 302, 303, 307, 308)
