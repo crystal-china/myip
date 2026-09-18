@@ -91,7 +91,7 @@ class Myip
 
     doc = uninitialized Lexbor::Parser
 
-    doc, _code = from_url(ip111_url, headers: HTTP::Headers{
+    doc, _code = from_url(ip111_url, follow: true, headers: HTTP::Headers{
       "User-Agent" => "curl/7.88.1",
       "Accept"     => "*/*",
       "Host"       => URI.parse(ip111_url).host.not_nil!,
@@ -256,12 +256,24 @@ class Myip
     # end
   end
 
-  private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new) : Tuple(Lexbor::Parser, Int32)
+  private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new, redirects_left : Int32 = 5) : Tuple(Lexbor::Parser, Int32)
     response = HTTP::Client.get url, headers: headers
     if response.status_code == 200
       {Lexbor::Parser.new(response.body), 200}
-    elsif follow && response.status_code == 301
-      from_url response.headers["Location"], follow: true, headers: headers
+    elsif follow && response.status_code.in?(301, 302, 303, 307, 308)
+      raise ArgumentError.new "Too many redirects while visiting #{url}" if redirects_left <= 0
+
+      location = response.headers["Location"]?
+      raise ArgumentError.new "Host #{url} returned #{response.status_code} without a Location header" unless location
+
+      redirect_url = URI.parse(url).resolve(location).to_s
+      redirect_headers = headers.dup
+      redirect_headers.delete("Host")
+
+      from_url redirect_url,
+        follow: true,
+        headers: redirect_headers,
+        redirects_left: redirects_left - 1
     elsif response.status_code == 502
       {Lexbor::Parser.new(response.body), 502}
     else
