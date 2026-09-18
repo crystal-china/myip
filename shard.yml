@@ -12,7 +12,7 @@ dependencies:
   lexbor:
     github: kostya/lexbor
   term-spinner:
-    github: crystal-term/spinner
+    github: zw963/spinner
 
 development_dependencies:
   ameba:

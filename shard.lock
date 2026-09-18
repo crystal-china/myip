@@ -13,6 +13,6 @@ shards:
     version: 1.0.0
 
   term-spinner:
-    git: https://github.com/crystal-term/spinner.git
-    version: 1.0.0
+    git: https://github.com/zw963/spinner.git
+    version: 1.0.0+git.commit.012333834fdb921b2253f1327126c005c46abd5a
 
