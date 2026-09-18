@@ -22,7 +22,7 @@ jobs:
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
       - name: Install shards
-        run: shards check || shards install --without-development
+        run: shards check || shards install
       - name: Check formatting
         run: crystal tool format --check
       - name: package information
