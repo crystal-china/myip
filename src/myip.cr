@@ -306,10 +306,17 @@ class Myip
                 raise ArgumentError.new "Dyn CheckIP response has no body"
 
     text = body_node.tag_text.strip
-    match = text.match(/Current IP Address:\s*([0-9a-fA-F:.]+)/)
+    match = text.match(/Current IP Address:\s*(\S+)/)
     raise ArgumentError.new "Unable to parse Dyn CheckIP response" unless match
 
-    match[1]
+    address = match[1]
+    begin
+      Socket::IPAddress.new(address, 0)
+    rescue Socket::Error
+      raise ArgumentError.new "Unable to parse Dyn CheckIP response"
+    end
+
+    address
   end
 
   private def http_get(url : String, headers = HTTP::Headers.new, *, connect_timeout = CONNECT_TIMEOUT, read_timeout = READ_TIMEOUT) : HTTP::Client::Response
