@@ -2,17 +2,17 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/crystal-ameba/ameba.git
-    version: 1.6.4
+    version: 1.7.0
 
   lexbor:
     git: https://github.com/kostya/lexbor.git
-    version: 3.4.2
+    version: 3.6.4
 
   term-cursor:
     git: https://github.com/crystal-term/cursor.git
-    version: 0.2.0+git.commit.8a4471a0d4ff59251705d6aa050df261748dd8ca
+    version: 1.0.0
 
   term-spinner:
     git: https://github.com/crystal-term/spinner.git
-    version: 0.1.0+git.commit.60350f9598335c559a8350d98fb2b9042e53290f
+    version: 1.0.0
 
