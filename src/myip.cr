@@ -219,6 +219,7 @@ class Myip
   def process
     spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
     detail_chan = Channel(String).new
+    failed = false
 
     chan_send_count.times do
       select
@@ -227,11 +228,14 @@ class Myip
         STDOUT.puts "#{ipinfo}: #{ip}"
       when message = error_chan.receive
         STDERR.puts message
+        failed = true
       when timeout 10.seconds
         STDERR.puts "Timeout, check your network connection!"
-        exit
+        exit 1
       end
     end
+
+    exit 1 if failed
 
     # chan_send_count.times do
     #   select

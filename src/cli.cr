@@ -83,6 +83,7 @@ OptionParser.parse do |parser|
       myip.ip_from_akamai
     else
       STDERR.puts usage
+      exit 1
     end
   end
 end
