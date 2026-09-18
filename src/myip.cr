@@ -153,9 +153,11 @@ class Myip
     self.chan_send_count = chan_send_count() + 1
     spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
     spawn do
+      # IP138 首页，用于查找实际显示 IP 信息的 iframe。
       url = "https://www.ip138.com"
       sp = spinner.register("Connecting to #{url.as_title} ...")
 
+      # 首页 iframe 的 src，当前通常是 //数字.ip138.com/ 形式。
       ip138_url = ""
 
       sp.run do
@@ -165,7 +167,14 @@ class Myip
         sp.success
       end
 
-      ip138_url = "https:#{ip138_url}"
+      # 转成完整 URL，同时兼容协议相对、绝对以及普通相对地址。
+      #
+      # URI.parse("https://www.ip138.com")
+      #   .resolve("//2026.ip138.com/")
+      #   .to_s
+      #
+      # 结果是：https://2026.ip138.com/
+      ip138_url = URI.parse(url).resolve(ip138_url).to_s
 
       headers = HTTP::Headers{
         "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
