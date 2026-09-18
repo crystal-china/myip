@@ -82,6 +82,12 @@ describe Myip do
     TestableMyip.new.parse_dyndns(body).should eq("1.2.3.4")
   end
 
+  it "reports an invalid Dyn CheckIP HTML response" do
+    expect_raises(ArgumentError, "Unable to parse Dyn CheckIP response") do
+      TestableMyip.new.parse_dyndns("<html><body>unexpected response</body></html>")
+    end
+  end
+
   it "times out while waiting for an HTTP response" do
     server = HTTP::Server.new do |context|
       sleep 100.milliseconds

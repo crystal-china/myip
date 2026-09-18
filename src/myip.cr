@@ -55,7 +55,7 @@ class Myip
 
         chan.send({"Dyn CheckIP", parse_dyndns_body(response.body)})
         spinner.success
-      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
+      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | Lexbor::Error
         error_chan.send("Dyn CheckIP failed: #{ex.message}")
       end
     end
@@ -111,22 +111,27 @@ class Myip
     spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
     ip111_url = "https://ip111.cn"
 
-    doc = uninitialized Lexbor::Parser
-
     doc, _code = from_url(ip111_url, follow: true, headers: HTTP::Headers{
       "User-Agent" => "curl/7.88.1",
       "Accept"     => "*/*",
     })
 
-    title = doc.css(".card-header").first.tag_text.strip
-    ipinfo = doc.css(".card-body p").first.tag_text.strip
+    title_node = doc.css(".card-header").first? ||
+                 raise ArgumentError.new "ip111: .card-header not found"
+
+    ipinfo_node = doc.css(".card-body p").first? ||
+                  raise ArgumentError.new "ip111: .card-body p not found"
+
+    title = title_node.tag_text.strip
+    ipinfo = ipinfo_node.tag_text.strip
 
     STDOUT.puts "#{title}：#{ipinfo}"
 
     # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
     doc.nodes("iframe").each do |node|
       self.chan_send_count = chan_send_count() + 1
-      url = node.attribute_by("src").not_nil!
+      url = node.attribute_by("src") || raise ArgumentError.new "ip111: iframe src not found"
+      raise ArgumentError.new "ip111: iframe src is empty" if url.empty?
 
       spawn do
         headers = HTTP::Headers{
@@ -134,17 +139,28 @@ class Myip
         }
 
         doc, _code = from_url(url, headers: headers)
-        ipinfo = doc.body!.tag_text.strip
+        body_node = doc.body || raise ArgumentError.new "ip111 iframe: body not found"
+
+        ipinfo = body_node.tag_text.strip
         # ip = ipinfo[/[a-z0-9:.]+/]
 
         # 这里的 parse title 涉及一些 IO 等待情况（非一蹴而就）
         # 如果在 spawn 外面解析 title, 然后传递 title 到 spawn 代码块里面，
         # 此时会涉及 "共享变量" 的经典问题，即： spawn 内部共享外面的变量
         # 可能会出现，spawn 内部看到的外部的 url 是两个相同的 url.
-        title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
+        parent = node.parent || raise ArgumentError.new "ip111: iframe parent not found"
+
+        grandparent = parent.parent || raise ArgumentError.new "ip111: iframe grandparent not found"
+
+        container = grandparent.parent || raise ArgumentError.new "ip111: iframe container not found"
+
+        title_node = container.css(".card-header").first? ||
+                     raise ArgumentError.new "ip111: iframe .card-header not found"
+
+        title = title_node.tag_text.strip
         chan.send({"#{title}：", ipinfo})
-      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
-        error_chan.send(ex.message.to_s)
+      rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
+        error_chan.send("ip111 failed: #{ex.message}")
       end
     end
   end
@@ -158,14 +174,20 @@ class Myip
       sp = spinner.register("Connecting to #{url.as_title} ...")
 
       # 首页 iframe 的 src，当前通常是 //数字.ip138.com/ 形式。
-      ip138_url = ""
-
+      iframe_src = nil.as(String?)
       sp.run do
         doc, _code = from_url(url, follow: true)
-        ip138_url = doc.css("iframe").first.attribute_by("src").not_nil!
+        iframe = doc.css("iframe").first? || raise ArgumentError.new "ip138: iframe not found"
+
+        src = iframe.attribute_by("src") || raise ArgumentError.new "ip138: iframe src not found"
+        raise ArgumentError.new "ip138: iframe src is empty" if src.empty?
+        iframe_src = src
 
         sp.success
       end
+
+      raise ArgumentError.new "ip138: iframe src was not parsed" unless iframe_src
+      ip138_url = iframe_src.as(String)
 
       # 转成完整 URL，同时兼容协议相对、绝对以及普通相对地址。
       #
@@ -176,9 +198,12 @@ class Myip
       # 结果是：https://2026.ip138.com/
       ip138_url = URI.parse(url).resolve(ip138_url).to_s
 
+      ip138_host = URI.parse(ip138_url).host ||
+                   raise ArgumentError.new "ip138: iframe URL has no host: #{ip138_url}"
+
       headers = HTTP::Headers{
         "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Host"           => URI.parse(ip138_url).host.not_nil!,
+        "Host"           => ip138_host,
         "Referer"        => url,
         "Sec-Fetch-Dest" => "iframe",
         "Sec-Fetch-Mode" => "navigate",
@@ -188,18 +213,22 @@ class Myip
 
       sp1 = spinner.register("Connecting to #{ip138_url.as_title} ...")
 
-      code = 0
-      doc1 = uninitialized Lexbor::Parser
-
+      iframe_doc = nil.as(Lexbor::Parser?)
       sp1.run do
-        doc1, code = from_url(ip138_url, headers: headers)
+        doc, _code = from_url(ip138_url, headers: headers)
+        iframe_doc = doc
 
         sp1.success
       end
 
-      body = doc1.body.not_nil!.tag_text.strip
+      raise ArgumentError.new "ip138: iframe response was not parsed" unless iframe_doc
+      doc = iframe_doc.as(Lexbor::Parser)
+      body_node = doc.body || raise ArgumentError.new "ip138: iframe body not found"
 
-      chan.send({"ip138.com", body.lines[0].strip})
+      body = body_node.tag_text.strip
+      first_line = body.lines.first? || raise ArgumentError.new "ip138: iframe body is empty"
+
+      chan.send({"ip138.com", first_line.strip})
 
       # if code == 502
       #   myip = doc1.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
@@ -223,8 +252,8 @@ class Myip
       # end
 
 
-    rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error
-      error_chan.send(ex.message.to_s)
+    rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
+      error_chan.send("ip138 failed: #{ex.message}")
     end
   end
 
@@ -320,7 +349,10 @@ class Myip
   end
 
   private def parse_dyndns_body(body : String) : String
-    text = Lexbor::Parser.new(body).body.not_nil!.tag_text.strip
+    body_node = Lexbor::Parser.new(body).body ||
+                raise ArgumentError.new "Dyn CheckIP response has no body"
+
+    text = body_node.tag_text.strip
     match = text.match(/Current IP Address:\s*([0-9a-fA-F:.]+)/)
     raise ArgumentError.new "Unable to parse Dyn CheckIP response" unless match
 
