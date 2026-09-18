@@ -20,10 +20,6 @@ class TestableMyip < Myip
 end
 
 describe Myip do
-  it "works" do
-    false.should eq(false)
-  end
-
   it "starts a spinner on Crystal's current execution context" do
     spinner = Term::Spinner.new(interval: 1.millisecond)
 
@@ -63,7 +59,7 @@ describe Myip do
     end
   end
 
-  it "rejects a 502 response" do
+  it "rejects a non-2xx response" do
     server = HTTP::Server.new do |context|
       context.response.status = HTTP::Status::BAD_GATEWAY
       context.response.print("<html><body>bad gateway</body></html>")
@@ -75,6 +71,41 @@ describe Myip do
       url = "http://127.0.0.1:#{address.port}"
       expect_raises(ArgumentError, "Host #{url} returned 502") do
         TestableMyip.new.fetch_url(url)
+      end
+    ensure
+      server.close
+    end
+  end
+
+  it "rejects a redirect without a Location header" do
+    server = HTTP::Server.new do |context|
+      context.response.status = HTTP::Status::MOVED_PERMANENTLY
+    end
+    address = server.bind_tcp("127.0.0.1", 0)
+    spawn { server.listen }
+
+    begin
+      url = "http://127.0.0.1:#{address.port}"
+      expect_raises(ArgumentError, "Host #{url} returned 301 without a Location header") do
+        TestableMyip.new.fetch_url(url, follow: true)
+      end
+    ensure
+      server.close
+    end
+  end
+
+  it "rejects redirects beyond the configured limit" do
+    server = HTTP::Server.new do |context|
+      context.response.status = HTTP::Status::FOUND
+      context.response.headers["Location"] = "/loop"
+    end
+    address = server.bind_tcp("127.0.0.1", 0)
+    spawn { server.listen }
+
+    begin
+      url = "http://127.0.0.1:#{address.port}/loop"
+      expect_raises(ArgumentError, "Too many redirects while visiting #{url}") do
+        TestableMyip.new.fetch_url(url, follow: true)
       end
     ensure
       server.close
@@ -103,6 +134,23 @@ describe Myip do
     expect_raises(ArgumentError, "Unable to parse Dyn CheckIP response") do
       TestableMyip.new.parse_dyndns("<html><body>unexpected response</body></html>")
     end
+  end
+
+  it "returns 1 for an unknown command" do
+    output = IO::Memory.new
+    error = IO::Memory.new
+    cli = File.expand_path("../src/cli.cr", __DIR__)
+
+    status = Process.run(
+      "crystal",
+      ["run", cli, "--", "unknown"],
+      output: output,
+      error: error
+    )
+
+    status.exit_code.should eq(1)
+    output.to_s.should be_empty
+    error.to_s.should contain("Usage:")
   end
 
   it "times out while waiting for an HTTP response" do
