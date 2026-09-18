@@ -20,6 +20,16 @@
 
 IPv6-only 服务需要当前网络具备可用的 IPv6 出口，否则会返回连接错误。
 
+## 调试
+
+默认情况下，查询失败只会向 STDERR 输出简洁错误。通过 `LOG_LEVEL=DEBUG` 可以同时查看原始异常和完整堆栈：
+
+```console
+LOG_LEVEL=DEBUG myip ipify
+```
+
+查询结果仍输出到 STDOUT，spinner、错误和 debug 日志输出到 STDERR。
+
 ![ip111.png](images/ip111.png)
 
 ## Contributing

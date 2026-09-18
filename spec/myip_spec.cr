@@ -130,9 +130,20 @@ describe Myip do
     TestableMyip.new.parse_dyndns(body).should eq("1.2.3.4")
   end
 
+  it "extracts an IPv6 address from a Dyn CheckIP HTML response" do
+    body = "<html><body>Current IP Address: 2001:db8::1</body></html>"
+    TestableMyip.new.parse_dyndns(body).should eq("2001:db8::1")
+  end
+
   it "reports an invalid Dyn CheckIP HTML response" do
     expect_raises(ArgumentError, "Unable to parse Dyn CheckIP response") do
       TestableMyip.new.parse_dyndns("<html><body>unexpected response</body></html>")
+    end
+  end
+
+  it "rejects an invalid Dyn CheckIP address" do
+    expect_raises(ArgumentError, "Unable to parse Dyn CheckIP response") do
+      TestableMyip.new.parse_dyndns("<html><body>Current IP Address: 999.2.3.4</body></html>")
     end
   end
 
@@ -151,6 +162,23 @@ describe Myip do
     status.exit_code.should eq(1)
     output.to_s.should be_empty
     error.to_s.should contain("Usage:")
+  end
+
+  it "returns 1 for an invalid option" do
+    output = IO::Memory.new
+    error = IO::Memory.new
+    cli = File.expand_path("../src/cli.cr", __DIR__)
+
+    status = Process.run(
+      "crystal",
+      ["run", cli, "--", "--bad"],
+      output: output,
+      error: error
+    )
+
+    status.exit_code.should eq(1)
+    output.to_s.should be_empty
+    error.to_s.should start_with("Invalid option: --bad")
   end
 
   it "times out while waiting for an HTTP response" do
