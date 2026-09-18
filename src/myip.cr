@@ -216,29 +216,6 @@ class Myip
       first_line = body.lines.first? || raise ArgumentError.new "ip138: iframe body is empty"
 
       chan.send({"ip138.com", first_line.strip})
-
-      # if code == 502
-      #   myip = doc1.css("body p span.F").first.tag_text[/IP:\s*([0-9.]+)/, 1]
-      #   url = "https://www.ip138.com/iplookup.php?ip=#{myip}"
-
-      #   sp2 = spinner.register("Connecting to #{url.as_title} ...")
-
-      #   sp2.run do
-      #     doc, _code = from_url(url, headers: headers)
-
-      #     output = String.build do |io|
-      #       doc.css("div.table-box>table>tbody tr").each { |x| io << x.tag_text }
-      #     end
-
-      #     chan.send({output.squeeze('\n'), nil})
-
-      #     sp2.success
-      #   end
-      # else
-
-      # end
-
-
     rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
       error_chan.send("ip138 failed: #{ex.message}")
     end
@@ -264,47 +241,6 @@ class Myip
     end
 
     exit 1 if failed
-
-    # chan_send_count.times do
-    #   select
-    #   when value = chan.receive
-    #     ipinfo, ip = value
-
-    #     STDERR.puts "\n#{ipinfo}"
-
-    #     # if !ip.nil?
-    #     #   self.detail_chan_send_count = detail_chan_send_count() + 1
-    #     #   details_ip_url = "https://www.ipshudi.com/#{ip}.htm"
-    #     #   sp = spinner.register("Connecting to #{details_ip_url.as_title} ...")
-
-    #     #   spawn do
-    #     #     sp.run do
-    #     #       doc, _code = from_url(details_ip_url)
-
-    #     #       output = String.build do |io|
-    #     #         doc.css("div.ft>table>tbody>tr>td").each do |x|
-    #     #           io << x.tag_text
-    #     #         end
-    #     #       end
-
-    #     #       detail_chan.send(output.squeeze('\n'))
-
-    #     #       sp.success
-    #     #     end
-    #     #   end
-    #     # end
-    #   when timeout 5.seconds
-    #     STDERR.puts "Timeout, check your network connection!"
-    #     exit
-    #   end
-    # end
-
-    # detail_chan_send_count.times do
-    #   select
-    #   when ipinfo = detail_chan.receive
-    #     STDERR.puts ipinfo
-    #   end
-    # end
   end
 
   private def ip_from_raw(name : String, url : String)
