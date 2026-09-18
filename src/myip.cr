@@ -19,7 +19,6 @@ class Myip
   getter chan = Channel(Tuple(String, String?)).new
   getter error_chan = Channel(String).new
   property chan_send_count : Int32 = 0
-  property detail_chan_send_count : Int32 = 0
 
   def ip_from_ifconfig_io
     ip_from_raw("ifconfig.io", "https://ifconfig.io/ip")
@@ -97,11 +96,21 @@ class Myip
   def ip_from_ip111
     spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
     ip111_url = "https://ip111.cn"
+    homepage_spinner = spinner.register("Connecting to #{ip111_url.as_title} ...")
 
-    doc, _code = from_url(ip111_url, follow: true, headers: HTTP::Headers{
-      "User-Agent" => "curl/7.88.1",
-      "Accept"     => "*/*",
-    })
+    homepage_doc = nil.as(Lexbor::Parser?)
+    homepage_spinner.run do
+      doc, _code = from_url(ip111_url, follow: true, headers: HTTP::Headers{
+        "User-Agent" => "curl/7.88.1",
+        "Accept"     => "*/*",
+      })
+      homepage_doc = doc
+
+      homepage_spinner.success
+    end
+
+    raise ArgumentError.new "ip111: homepage response was not parsed" unless homepage_doc
+    doc = homepage_doc.as(Lexbor::Parser)
 
     title_node = doc.css(".card-header").first? ||
                  raise ArgumentError.new "ip111: .card-header not found"
@@ -112,7 +121,8 @@ class Myip
     title = title_node.tag_text.strip
     ipinfo = ipinfo_node.tag_text.strip
 
-    STDOUT.puts "#{title}：#{ipinfo}"
+    self.chan_send_count = chan_send_count() + 1
+    spawn { chan.send({title, ipinfo}) }
 
     # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
     doc.nodes("iframe").each do |node|
@@ -121,31 +131,34 @@ class Myip
       raise ArgumentError.new "ip111: iframe src is empty" if url.empty?
 
       spawn do
+        iframe_spinner = spinner.register("Connecting to #{url.as_title} ...")
         headers = HTTP::Headers{
           "Referer" => "https://ip111.cn/",
         }
 
-        doc, _code = from_url(url, headers: headers)
-        body_node = doc.body || raise ArgumentError.new "ip111 iframe: body not found"
+        iframe_spinner.run do
+          doc, _code = from_url(url, headers: headers)
+          body_node = doc.body || raise ArgumentError.new "ip111 iframe: body not found"
 
-        ipinfo = body_node.tag_text.strip
-        # ip = ipinfo[/[a-z0-9:.]+/]
+          ipinfo = body_node.tag_text.strip
 
-        # 这里的 parse title 涉及一些 IO 等待情况（非一蹴而就）
-        # 如果在 spawn 外面解析 title, 然后传递 title 到 spawn 代码块里面，
-        # 此时会涉及 "共享变量" 的经典问题，即： spawn 内部共享外面的变量
-        # 可能会出现，spawn 内部看到的外部的 url 是两个相同的 url.
-        parent = node.parent || raise ArgumentError.new "ip111: iframe parent not found"
+          # 这里的 parse title 涉及一些 IO 等待情况（非一蹴而就）
+          # 如果在 spawn 外面解析 title, 然后传递 title 到 spawn 代码块里面，
+          # 此时会涉及 "共享变量" 的经典问题，即： spawn 内部共享外面的变量
+          # 可能会出现，spawn 内部看到的外部的 url 是两个相同的 url.
+          parent = node.parent || raise ArgumentError.new "ip111: iframe parent not found"
 
-        grandparent = parent.parent || raise ArgumentError.new "ip111: iframe grandparent not found"
+          grandparent = parent.parent || raise ArgumentError.new "ip111: iframe grandparent not found"
 
-        container = grandparent.parent || raise ArgumentError.new "ip111: iframe container not found"
+          container = grandparent.parent || raise ArgumentError.new "ip111: iframe container not found"
 
-        title_node = container.css(".card-header").first? ||
-                     raise ArgumentError.new "ip111: iframe .card-header not found"
+          title_node = container.css(".card-header").first? ||
+                       raise ArgumentError.new "ip111: iframe .card-header not found"
 
-        title = title_node.tag_text.strip
-        chan.send({"#{title}：", ipinfo})
+          title = title_node.tag_text.strip
+          iframe_spinner.success
+          chan.send({title, ipinfo})
+        end
       rescue ex : ArgumentError | IO::Error | OpenSSL::SSL::Error | URI::Error | Lexbor::Error
         error_chan.send("ip111 failed: #{ex.message}")
       end
@@ -222,23 +235,27 @@ class Myip
   end
 
   def process
-    spinner = Term::Spinner::Multi.new(":spinner", format: :dots, interval: 0.2.seconds)
-    detail_chan = Channel(String).new
+    results = [] of Tuple(String, String?)
+    errors = [] of String
     failed = false
 
     chan_send_count.times do
       select
       when value = chan.receive
-        ipinfo, ip = value
-        STDOUT.puts "#{ipinfo}: #{ip}"
+        results << value
       when message = error_chan.receive
-        STDERR.puts message
+        errors << message
         failed = true
       when timeout 30.seconds
         STDERR.puts "Timeout, check your network connection!"
         exit 1
       end
     end
+
+    results.each do |label, value|
+      value ? STDOUT.puts("#{label}: #{value}") : STDOUT.puts(label)
+    end
+    errors.each { |message| STDERR.puts message }
 
     exit 1 if failed
   end
