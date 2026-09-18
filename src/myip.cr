@@ -58,16 +58,9 @@ class Myip
 
       spinner.run do
         response = HTTP::Client.get(url)
-        body = response.body
-        result = JSON.parse(body)
-        io = IO::Memory.new
-        PrettyPrint.format(result, io, width: 79)
-        io.rewind
-        chan.send({io.gets_to_end, nil})
+        chan.send({format_raw_body(response.body), nil})
 
         spinner.success
-      rescue JSON::ParseException
-        chan.send({body.not_nil!, nil})
       rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
         chan.send({ex.message.not_nil!, nil})
       end
@@ -254,11 +247,20 @@ class Myip
           raise ArgumentError.new "Host #{url} returned #{response.status_code}"
         end
 
-        chan.send({name, response.body.strip})
+        chan.send({name, format_raw_body(response.body)})
         spinner.success
       rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
         chan.send({"#{name} failed", ex.message.not_nil!})
       end
+    end
+  end
+
+  private def format_raw_body(body : String) : String
+    stripped_body = body.strip
+    begin
+      JSON.parse(stripped_body).to_pretty_json
+    rescue JSON::ParseException
+      stripped_body
     end
   end
 

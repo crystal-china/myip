@@ -5,6 +5,10 @@ class TestableMyip < Myip
   def fetch_url(url, *, follow = false, headers = HTTP::Headers.new)
     from_url(url, follow: follow, headers: headers)
   end
+
+  def format_body(body : String)
+    format_raw_body(body)
+  end
 end
 
 describe Myip do
@@ -50,5 +54,18 @@ describe Myip do
     ensure
       server.close
     end
+  end
+
+  it "pretty-prints JSON responses" do
+    TestableMyip.new.format_body(%({"ip":"1.2.3.4","country":"CN"})).should eq(<<-JSON)
+      {
+        "ip": "1.2.3.4",
+        "country": "CN"
+      }
+      JSON
+  end
+
+  it "keeps non-JSON responses as plain text" do
+    TestableMyip.new.format_body("  1.2.3.4\n").should eq("1.2.3.4")
   end
 end
