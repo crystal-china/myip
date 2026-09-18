@@ -9,7 +9,7 @@ require "term-spinner"
 
 class String
   def as_title
-    self.colorize(:yellow).on_blue.bold
+    colorize(:yellow).on_blue.bold
   end
 end
 

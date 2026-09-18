@@ -24,24 +24,24 @@ spawn do
 end
 
 usage = <<-USAGE
-Usage:
-myip ip111 => get ip info from https://ip111.cn
-myip ip138 => get ip info from https://www.ip138.com
-myip ipsb => get ip info from https://api.ip.sb/geoip
-myip ifconfig.io => get IP from https://ifconfig.io/ip
-myip ifconfig.co => get IP and geolocation info from https://ifconfig.co/json
-myip ifconfig.me => get connection info from https://ifconfig.me/all.json
-myip icanhazip => get IP from https://icanhazip.com
-myip httpbin => get origin IP from https://httpbin.org/ip
-myip dyndns => get IP from http://checkip.dyndns.org
-myip ipify => get IPv4 from https://api.ipify.org
-myip ipify6 => get IPv6 from https://api6.ipify.org
-myip cf => get connection info from Cloudflare trace
-myip ident => get IP and geolocation info from ident.me
-myip aws => get IP from AWS CheckIP
-myip akamai => get IP from Akamai
+  Usage:
+  myip ip111 => get ip info from https://ip111.cn
+  myip ip138 => get ip info from https://www.ip138.com
+  myip ipsb => get ip info from https://api.ip.sb/geoip
+  myip ifconfig.io => get IP from https://ifconfig.io/ip
+  myip ifconfig.co => get IP and geolocation info from https://ifconfig.co/json
+  myip ifconfig.me => get connection info from https://ifconfig.me/all.json
+  myip icanhazip => get IP from https://icanhazip.com
+  myip httpbin => get origin IP from https://httpbin.org/ip
+  myip dyndns => get IP from http://checkip.dyndns.org
+  myip ipify => get IPv4 from https://api.ipify.org
+  myip ipify6 => get IPv6 from https://api6.ipify.org
+  myip cf => get connection info from Cloudflare trace
+  myip ident => get IP and geolocation info from ident.me
+  myip aws => get IP from AWS CheckIP
+  myip akamai => get IP from Akamai
 
-USAGE
+  USAGE
 
 remaining_args = [] of String
 
