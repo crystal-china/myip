@@ -10,7 +10,11 @@ Usage:
 myip ip111 => get ip info from https://ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
 myip ipsb => get ip info from https://api.ip.sb/geoip
-myip ifconfig => get IP from https://ifconfig.io/ip
+myip ifconfig.io => get IP from https://ifconfig.io/ip
+myip ifconfig.co => get IP and geolocation info from https://ifconfig.co/json
+myip ifconfig.me => get connection info from https://ifconfig.me/all.json
+myip icanhazip => get IP from https://icanhazip.com
+myip httpbin => get origin IP from https://httpbin.org/ip
 myip ipify => get IPv4 from https://api.ipify.org
 myip ipify6 => get IPv6 from https://api6.ipify.org
 myip cf => get connection info from Cloudflare trace
@@ -51,8 +55,16 @@ OptionParser.parse do |parser|
       myip.ip_from_ip138
     elsif args.includes? "ipsb"
       myip.ip_from_ip_sb
-    elsif args.includes? "ifconfig"
-      myip.ip_from_ifconfig
+    elsif args.includes? "ifconfig.io"
+      myip.ip_from_ifconfig_io
+    elsif args.includes? "ifconfig.co"
+      myip.ip_from_ifconfig_co
+    elsif args.includes? "ifconfig.me"
+      myip.ip_from_ifconfig_me
+    elsif args.includes? "icanhazip"
+      myip.ip_from_icanhazip
+    elsif args.includes? "httpbin"
+      myip.ip_from_httpbin
     elsif args.includes? "ipify6"
       myip.ip_from_ipify(ip_version: 6)
     elsif args.includes? "ipify"

@@ -17,8 +17,24 @@ class Myip
   property chan_send_count : Int32 = 0
   property detail_chan_send_count : Int32 = 0
 
-  def ip_from_ifconfig
+  def ip_from_ifconfig_io
     ip_from_raw("ifconfig.io", "https://ifconfig.io/ip")
+  end
+
+  def ip_from_ifconfig_co
+    ip_from_raw("ifconfig.co", "https://ifconfig.co/json")
+  end
+
+  def ip_from_ifconfig_me
+    ip_from_raw("ifconfig.me", "https://ifconfig.me/all.json")
+  end
+
+  def ip_from_icanhazip
+    ip_from_raw("icanhazip", "https://icanhazip.com")
+  end
+
+  def ip_from_httpbin
+    ip_from_raw("httpbin.org", "https://httpbin.org/ip")
   end
 
   def ip_from_ipify(ip_version : Int32 = 4)
