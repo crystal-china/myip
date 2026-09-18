@@ -1,5 +1,11 @@
 require "option_parser"
+require "log"
 require "./myip"
+
+Log.setup_from_env(
+  default_level: :error,
+  backend: Log::IOBackend.new(STDERR)
+)
 
 ARGV << "--help" if ARGV.empty?
 

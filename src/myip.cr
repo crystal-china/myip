@@ -3,6 +3,7 @@ require "./myip/*"
 require "http/client"
 require "json"
 require "http/headers"
+require "log"
 require "colorize"
 require "term-spinner"
 
@@ -13,6 +14,8 @@ class String
 end
 
 class Myip
+  Log = ::Log.for(self)
+
   CONNECT_TIMEOUT = 5.seconds
   READ_TIMEOUT    = 8.seconds
 
@@ -332,7 +335,7 @@ class Myip
       raise ArgumentError.new "Host #{url} returned #{response.status_code}"
     end
   rescue e : Socket::Error
-    # e.inspect_with_backtrace(STDERR)
+    Log.debug(exception: e) { "Request to #{url} failed" }
     raise Socket::Error.new "Visit #{url} failed: #{e.message}"
   end
 end
