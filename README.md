@@ -4,7 +4,7 @@
 
 - `myip ipify`：通过 `https://api.ipify.org` 获取 IPv4 地址
 - `myip ipify6`：通过 `https://api6.ipify.org` 获取 IPv6 地址
-- `myip cloudflare`：通过 Cloudflare trace 获取 IP、机房、国家及连接信息
+- `myip cf`：通过 Cloudflare trace 获取 IP、机房、国家及连接信息
 - `myip ident`：通过 ident.me 获取 IP 及地理信息（JSON）
 - `myip aws`：通过 AWS CheckIP 获取 IP 地址
 - `myip akamai`：通过 Akamai 获取 IP 地址
@@ -12,11 +12,6 @@
 - `myip ifconfig`：通过 `https://ifconfig.io/ip` 获取 IP 地址
 - `myip ip111`：通过 `https://ip111.cn` 获取国内、国外及 Google 路径的 IP 信息
 - `myip ip138`：通过 `https://www.ip138.com` 获取国内 IP 信息
-
-以下旧服务暂时保留，但目前可能不可用：
-
-- `myip ipw`：`http://4.ipw.cn`
-- `myip ipw6`：`http://6.ipw.cn`
 
 IPv6-only 服务需要当前网络具备可用的 IPv6 出口，否则会返回连接错误。
 

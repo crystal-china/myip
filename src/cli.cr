@@ -3,11 +3,6 @@ require "./myip"
 
 ARGV << "--help" if ARGV.empty?
 
-# ip111 = false
-# ip138 = false
-# ipsb = false
-# ipw = false
-
 myip = Myip.new
 
 usage = <<-USAGE
