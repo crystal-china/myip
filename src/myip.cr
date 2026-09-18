@@ -61,6 +61,35 @@ class Myip
     end
   end
 
+  def ip_from_ipify(ip_version : Int32 = 4)
+    url = case ip_version
+          when 4
+            "https://api.ipify.org"
+          when 6
+            "https://api6.ipify.org"
+          else
+            raise ArgumentError.new "Unsupported IP version: #{ip_version}"
+          end
+
+    ip_from_raw("ipify IPv#{ip_version}", url)
+  end
+
+  def ip_from_cf
+    ip_from_raw("Cloudflare trace", "https://cloudflare.com/cdn-cgi/trace")
+  end
+
+  def ip_from_ident
+    ip_from_raw("ident.me", "https://ident.me/json")
+  end
+
+  def ip_from_aws
+    ip_from_raw("AWS CheckIP", "https://checkip.amazonaws.com/")
+  end
+
+  def ip_from_akamai
+    ip_from_raw("Akamai", "https://whatismyip.akamai.com/")
+  end
+
   def ip_from_ip_sb
     self.chan_send_count = chan_send_count() + 1
     spawn do
@@ -252,6 +281,25 @@ class Myip
     #     STDERR.puts ipinfo
     #   end
     # end
+  end
+
+  private def ip_from_raw(name : String, url : String)
+    self.chan_send_count = chan_send_count() + 1
+    spawn do
+      spinner = Term::Spinner.new(":spinner Connecting to #{url.as_title} ...", format: :dots, interval: 0.2.seconds)
+
+      spinner.run do
+        response = HTTP::Client.get(url)
+        unless response.success?
+          raise ArgumentError.new "Host #{url} returned #{response.status_code}"
+        end
+
+        chan.send({name, response.body.strip})
+        spinner.success
+      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
+        chan.send({"#{name} failed", ex.message.not_nil!})
+      end
+    end
   end
 
   private def from_url(url : String, *, follow : Bool = false, headers = HTTP::Headers.new, redirects_left : Int32 = 5) : Tuple(Lexbor::Parser, Int32)

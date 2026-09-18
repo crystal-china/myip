@@ -12,12 +12,18 @@ myip = Myip.new
 
 usage = <<-USAGE
 Usage:
-myip ip111 => get ip from http://www.ip111.cn
+myip ip111 => get ip info from https://ip111.cn
 myip ip138 => get ip info from https://www.ip138.com
 myip ipsb => get ip info from https://api.ip.sb/geoip
 myip ifconfig => get ip info from https://ifconfig.io
 myip ipw => get ip info from http://4.ipw.cn
 myip ipw6 => get ipv6 info from http://6.ipw.cn
+myip ipify => get IPv4 from https://api.ipify.org
+myip ipify6 => get IPv6 from https://api6.ipify.org
+myip cf => get connection info from Cloudflare trace
+myip ident => get IP and geolocation info from ident.me
+myip aws => get IP from AWS CheckIP
+myip akamai => get IP from Akamai
 
 USAGE
 
@@ -54,6 +60,18 @@ OptionParser.parse do |parser|
       myip.ip_from_ip_sb
     elsif args.includes? "ifconfig"
       myip.ip_from_ifconfig
+    elsif args.includes? "ipify6"
+      myip.ip_from_ipify(ip_version: 6)
+    elsif args.includes? "ipify"
+      myip.ip_from_ipify(ip_version: 4)
+    elsif args.includes? "cf"
+      myip.ip_from_cf
+    elsif args.includes? "ident"
+      myip.ip_from_ident
+    elsif args.includes? "aws"
+      myip.ip_from_aws
+    elsif args.includes? "akamai"
+      myip.ip_from_akamai
     elsif args.includes? "ipw6"
       myip.ip_from_ipw(ip_version: 6)
     elsif args.includes? "ipw"

@@ -1,14 +1,24 @@
 # myip
 
-返回本机的公网 IP 以及访问外网的公网 IP，匿名使用以下服务:
+返回本机的公网 IP 以及访问外网的公网 IP，匿名使用以下服务（均无需 API key）：
 
-http://www.ip111.cn/ 获取 IP 信息.
-https://www.ipshudi.com 针对 ip111.cn 获取的 IP 信息,查询更加详细的信息.
+- `myip ipify`：通过 `https://api.ipify.org` 获取 IPv4 地址
+- `myip ipify6`：通过 `https://api6.ipify.org` 获取 IPv6 地址
+- `myip cloudflare`：通过 Cloudflare trace 获取 IP、机房、国家及连接信息
+- `myip ident`：通过 ident.me 获取 IP 及地理信息（JSON）
+- `myip aws`：通过 AWS CheckIP 获取 IP 地址
+- `myip akamai`：通过 Akamai 获取 IP 地址
+- `myip ipsb`：通过 `https://api.ip.sb/geoip` 获取详细 IP 信息
+- `myip ifconfig`：通过 `https://ifconfig.io` 获取 IP 地址
+- `myip ip111`：通过 `https://ip111.cn` 获取国内、国外及 Google 路径的 IP 信息
+- `myip ip138`：通过 `https://www.ip138.com` 获取国内 IP 信息
 
-此外,也额外访问以下网址获取信息作为补充
+以下旧服务暂时保留，但目前可能不可用：
 
-http://www.ip138.com 获取国内 IP 信息
-https://api.ip.sb/geoip 获取外网的详细 IP 信息
+- `myip ipw`：`http://4.ipw.cn`
+- `myip ipw6`：`http://6.ipw.cn`
+
+IPv6-only 服务需要当前网络具备可用的 IPv6 出口，否则会返回连接错误。
 
 ![ip111.png](images/ip111.png)
 
