@@ -37,7 +37,7 @@ class Myip
         chan.send({body, nil})
 
         spinner.success
-      rescue ex : ArgumentError | Socket::Error
+      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
         chan.send({ex.message.not_nil!, nil})
       end
     end
@@ -55,7 +55,7 @@ class Myip
         chan.send({body, nil})
 
         spinner.success
-      rescue ex : ArgumentError | Socket::Error
+      rescue ex : ArgumentError | Socket::Error | IO::EOFError
         chan.send({ex.message.not_nil!, nil})
       end
     end
@@ -79,7 +79,7 @@ class Myip
         spinner.success
       rescue JSON::ParseException
         chan.send({body.not_nil!, nil})
-      rescue ex : ArgumentError | Socket::Error
+      rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
         chan.send({ex.message.not_nil!, nil})
       end
     end
