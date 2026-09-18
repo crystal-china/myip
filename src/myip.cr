@@ -14,6 +14,7 @@ end
 
 class Myip
   getter chan = Channel(Tuple(String, String?)).new
+  getter error_chan = Channel(String).new
   property chan_send_count : Int32 = 0
   property detail_chan_send_count : Int32 = 0
 
@@ -52,7 +53,7 @@ class Myip
         chan.send({"Dyn CheckIP", parse_dyndns_body(response.body)})
         spinner.success
       rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
-        chan.send({"Dyn CheckIP failed", ex.message.not_nil!})
+        error_chan.send("Dyn CheckIP failed: #{ex.message}")
       end
     end
   end
@@ -98,7 +99,7 @@ class Myip
 
         spinner.success
       rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
-        chan.send({ex.message.not_nil!, nil})
+        error_chan.send(ex.message.to_s)
       end
     end
   end
@@ -117,7 +118,7 @@ class Myip
     title = doc.css(".card-header").first.tag_text.strip
     ipinfo = doc.css(".card-body p").first.tag_text.strip
 
-    STDERR.puts "#{title}：#{ipinfo}"
+    STDOUT.puts "#{title}：#{ipinfo}"
 
     # 这里只能用 each, 没有 map, 因为 doc.nodes("iframe") 是一个 Iterator::SelectIterator 对象
     doc.nodes("iframe").each do |node|
@@ -140,7 +141,7 @@ class Myip
         title = node.parent!.parent!.parent!.css(".card-header").first.tag_text.strip
         chan.send({"#{title}：", ipinfo})
       rescue ex : ArgumentError | Socket::Error | OpenSSL::SSL::Error
-        chan.send({ex.message.not_nil!, nil})
+        error_chan.send(ex.message.to_s)
       end
     end
   end
@@ -211,7 +212,7 @@ class Myip
 
 
     rescue ex : ArgumentError | Socket::Error
-      chan.send({ex.message.not_nil!, nil})
+      error_chan.send(ex.message.to_s)
     end
   end
 
@@ -223,7 +224,9 @@ class Myip
       select
       when value = chan.receive
         ipinfo, ip = value
-        STDERR.puts "#{ipinfo}: #{ip}"
+        STDOUT.puts "#{ipinfo}: #{ip}"
+      when message = error_chan.receive
+        STDERR.puts message
       when timeout 10.seconds
         STDERR.puts "Timeout, check your network connection!"
         exit
@@ -286,7 +289,7 @@ class Myip
         chan.send({name, format_raw_body(response.body)})
         spinner.success
       rescue ex : ArgumentError | Socket::Error | IO::EOFError | OpenSSL::SSL::Error
-        chan.send({"#{name} failed", ex.message.not_nil!})
+        error_chan.send("#{name} failed: #{ex.message}")
       end
     end
   end
